@@ -1,0 +1,13 @@
+**An error has occurred, and the archive could not be created.**
+
+Most likely it's one of the following situations:
+  * Plugin can't write to the media directory...
+  * The program ran out of usable memory (RAM)...
+  * You ran out of usable disk space...
+  * You're experiencing an actual hardware failure (for instance, disk failure.)
+
+Other possibilities exist-- execution time constraints, non-standard tar, gzip, bzip2, or something else completely different, but these aren't really as likely to occur.
+
+Your best course of action is to check each item above, resolve it, and try again.
+
+Don't forget to check your disk and RAM quotas for your host if you have them, and look for possible problems in your file system (very large files, for instance.)

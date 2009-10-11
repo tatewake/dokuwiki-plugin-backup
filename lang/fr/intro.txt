@@ -1,0 +1,12 @@
+====== Outil de sauvegarde ======
+
+Cet outil vous permet de faire une sauvegarde de vos pages, de vos meta données, de la configuration de votre wiki, de vos templates et de vos plugins, ainsi que de tout ce que vous désirerez sauvegarder ; au cas ou une [[wp>meteorite]] tomberait accidentellement sur votre hébergeur ou que quelque chose de similaire arrive.
+
+Cet outil va créer une archive [[wpfr>tar_(file_format)|tar]], compressée avec [[wp>bzip2]] ou [[wp>gzip]] (ou non compressée, selon ce qui est disponible) que vous pourrez alors télécharger.
+
+**Notes**
+  * Si la sauvegarde prend trop de temps sur votre serveur, essayez de sauvegarder moins d'éléments à la fois.
+  * Le fichier de backup est intitulé //dw-backup-AnMoisJour-HeureMinuteSeconde.tar.bz2//, et l'heure est en format 24h.
+    * Le fichier est formaté de tel sorte que les backup soient **toujours** triés correctement. Je vous suggère de ne pas le modifierr.
+
+Sélectionnez les éléments que vous désirez sauvegarder...

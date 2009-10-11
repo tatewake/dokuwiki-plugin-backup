@@ -1,0 +1,13 @@
+====== Backup Tool ======
+
+This tool allows you to backup your page and meta data, as well as configuration for the wiki, templates, and plugins, as well as anything else you'd like to backup just in case a [[wp>meteorite]] accidentally lands on top of your hosting provider or something similar.
+
+The tool will create a [[wp>tar_(file format)|tar]] archive, compressed with either [[wp>bzip2]] or [[wp>gzip]] (or uncompressed, depending on availability) which you can then download.
+
+**Notes:**
+  * If the backup times out on your server, try backing up fewer items at once.
+  * The final backup file is named //dw-backup-YearMonthDay-HourMinuteSecond.tar.bz2//, and time is in **24 hour format**.
+    * The file is formatted this way so that backups will **always** be sorted correctly. I suggest you not change this, but it's up to you.
+
+Please select the following items you wish to backup...
+

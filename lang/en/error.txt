@@ -1,0 +1,10 @@
+====== Backup Tool ======
+
+**Backup Tool will not work on your current configuration.**
+
+There are two ways to solve this problem:
+  * Either install or have your host install [[http://pear.php.net/package/PEAR|PEAR]], a library for PHP that contains an archiving class Backup Tool can use.
+  * Have your host enable access to the PHP [[http://us.php.net/exec|exec]] function, along with access to command line **tar** and either **gzip** or **bzip2**.
+
+When either of these two issues are resolved on your system, refresh the Backup Tool page, this message will go away, and you'll be able to start a backup.
+
