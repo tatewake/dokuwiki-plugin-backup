@@ -89,33 +89,34 @@ var $backup = '';
 		}
 	}
 
-	function runPearBackup($files, $finalfile, $tarfilename, $compress_type)
+	function runPearBackup($files, $finalfile, $tarfilename, $basedir, $compress_type)
 	{
 		//Create archive object, add files, compile and compress.
 		$tar = new Archive_Tar($finalfile,$compress_type);
-		$result = $tar->createModify($files,'',DOKU_INC);
+		$result = $tar->createModify($files,'',$basedir);
 		$tar->_Archive_Tar();
-
+        
 		return ($result) ? $tarfilename.'.'.$compress_type : '';	//return filename on success...
 	}
 
-	function runExecBackup($files, $tarfilename, $basename)
+	function runExecBackup($files, $tarfilename, $basename, $basedir)
 	{
 		$result = false;
 		$i = 0;	//mark for first file
 		$rval = 0;
-        dbg("runExecBackup(".print_r($files,true).", $tarfilename, $basename)");
-		//For each item, add it to the file.
-		foreach($files as $item)
-		{
-//			print("tar ". (($i != 0) ? "-rf " : "-cf ") .$tarfilename." "._getRelativePath($item).'<br/>');
-			if (!bt_exec("tar ". (($i != 0) ? "-rf " : "-cf ") .$tarfilename." "._getRelativePath($item)))
-			{
-                dbg("failed on $item");
-				return ''; //tar failed (possibly out of memory)
-			}
-			$i = 1;
-		}
+        dbg("runExecBackup(".print_r($files,true).", '$tarfilename', '$basename', '$basedir')");
+		
+        // Put all the tarred filenames into a manifest.
+        $manifile = $tarfilename.'.manifest.txt';
+        $manihandle = fopen($manifile, 'w');
+        foreach($files as $item) fwrite($item."\n");
+        fclose($manihandle);
+        
+        $tarfilename = escapeshellarg($tarfilename);
+        $basedir = escapeshellarg($basedir);
+        $manifile = escapeshellarg($manifile);
+        if (!bt_exec("tar -cf ".$tarfilename." -C ".$basedir." --files-from ".$manifile))
+            return ''; //tar failed (possibly out of memory)
 
 		if (bt_exec('bzip2 --version'))
 			if (bt_exec('bzip2 -9 '.$tarfilename)) return $basename.'.bz2';	//Bzip2 compression available.
@@ -155,8 +156,8 @@ var $backup = '';
 //				ptln('bt_settings[type] = '.$bt_settings['type'].'<br/>');
 				ptln('	Backup method: <select name="backup[type]">');
 				if ($bt_pearWorks == true) ptln('		<option value="PEAR" '.(strcmp($bt_settings['type'], 'PEAR') == 0 ? 'selected' : '').'>PEAR Archive Library</option>');
-				if ($bt_execWorks == true) ptln('		<option value="exec" '.(strcmp($bt_settings['type'], 'exec') == 0 ? 'selected' : '').'>GNU Tar</option>');
-				if ($bt_execWorks == true) ptln('		<option value="lazy" '.(strcmp($bt_settings['type'], 'lazy') == 0 ? 'selected' : '').'>Lazy and Quick Method</option>');
+				if ($bt_execWorks == true) ptln('		<option value="exec" '.(strcmp($bt_settings['type'], 'exec') == 0 ? 'selected' : '').'>GNU Tar (filtered)</option>');
+				if ($bt_execWorks == true) ptln('		<option value="lazy" '.(strcmp($bt_settings['type'], 'lazy') == 0 ? 'selected' : '').'>GNU Tar (fast;unfiltered)</option>');
 				ptln('	</select><br/><br/>');
 
 				print '<table class="inline">';
@@ -198,8 +199,11 @@ var $backup = '';
 
 				//Generate array of files
 				$files = (array)NULL;
-
-				if (strcmp($this->backup['type'], 'lazy') == 0)	//Use lazy method
+                
+                if($this->backup['config'] && is_readable(DOKU_INC."inc/preload.php"))
+                    $files[] = DOKU_INC."inc/preload.php";// preload, if existant, is part of config.
+                    
+				if (strcmp($this->backup['type'], 'lazy') == 0)	//Use fast lazy method
 				{
 					if ($this->backup['pages'])					$files = array_merge($files, array($conf['datadir']));
 					if ($this->backup['revisions'])			$files = array_merge($files, array($conf['olddir']));
@@ -207,7 +211,7 @@ var $backup = '';
 					if ($this->backup['config'])				$files = array_merge($files, array(DOKU_CONF));
 					if ($this->backup['templates'])			$files = array_merge($files, array(DOKU_INC . "lib/tpl"));
 					if ($this->backup['plugins'])				$files = array_merge($files, array(DOKU_INC . "lib/plugins"));
-					if ($this->backup['media'])					$files = array_merge($files, array($conf['mediadir']));
+                    if ($this->backup['media'])				$files = array_merge($files, array($conf['mediadir']));
 				}
 				else	//Use filtered files method
 				{
@@ -217,18 +221,40 @@ var $backup = '';
 					if ($this->backup['config'])				$files = array_merge($files, directoryToArray(DOKU_CONF));
 					if ($this->backup['templates'])			$files = array_merge($files, directoryToArray(DOKU_INC . "lib/tpl"));
 					if ($this->backup['plugins'])				$files = array_merge($files, directoryToArray(DOKU_INC . "lib/plugins"));
-					if ($this->backup['media'])
-					{
-						$files = array_merge($files, directoryToArray($conf['mediadir']));
-						$files = array_filter($files, "filterBackups");
-					}
+					if ($this->backup['media'])  			$files = array_merge($files, directoryToArray($conf['mediadir']));
 				}
 
+                // convert all filenames to canonical ones.
+                $files = array_map('realpath',$files);
+                
+                // construct list of filtered paths
+                $filterpaths = array_map('realpath',array_map('trim',explode($this->getConf['filterdirs'],',')));
+                foreach(array_keys($filterpaths) as $key) {
+                    if(!is_dir($filterpaths[$key])
+                        unset($filterpaths[$key]);     // remove non-directories
+                    else {
+                        // check if path has trailing slash; if not, add one.
+                        $lastchar = $filterpaths[$key][strlen($filterpaths[$key])-1];
+                        if($lastchar != DIRECTORY_SEPARATOR)
+                            $filterpaths[$key] .= DIRECTORY_SEPARATOR;
+                    }    
+                }
+                $this->filterdirs = array_combine($filterpaths,array_map('strlen',$filterpaths));
+                // then filter away.
+                $files = array_filter($files,array($this,'filterFile'));
+                
+                // Compute the common directory -- this will be subtracted from the filenames.
+                $basedir = dirname(substr($files[0],0,_commonPrefix($files)));
+                
 				//Run the backup method
 				if (strcmp($this->backup['type'], 'PEAR') == 0)
-					$finalfile = $this->runPearBackup($files, $conf['savedir'].$finalfile, $tarfilename, $compress_type);
+					$finalfile = $this->runPearBackup($files, $conf['savedir'].'/'.$finalfile, $tarfilename, $basedir, $compress_type);
 				else	//exec and lazy both use the exec method
-					$finalfile = $this->runExecBackup($files, $conf['savedir'].$tarfilename, $tarfilename);
+                {
+                    $this->_commonlength = strlen($basedir);
+                    $files = array_map(array($this,'getRelativePath'),$files);
+					$finalfile = $this->runExecBackup($files, $conf['savedir'].'/'.$tarfilename, $tarfilename, $basedir);
+                }
 
 				if ($finalfile == '')
 				{
@@ -246,6 +272,19 @@ var $backup = '';
 
 		print $this->plugin_locale_xhtml('donate');
 	}
+    
+    // returns true if $fname is not in the filter list
+    function filterFile($fname) {
+        foreach($this->filterdirs as $dir->$len)
+            if(!strncmp($dir,$fname,$len))
+                return false; // $fname has $dir as prefix.
+        return true; // $fname does not match any prefix.
+    }
+    
+    // subtract first few characters from $fname
+    function getRelativePath($fname) {
+        return substr($fname,$this->_commonlength);
+    }
 }
 
 function bt_exec($cmd)
@@ -257,14 +296,20 @@ function bt_exec($cmd)
 	return (($rval == 0) ? true : false);	
 }
 
-//From Uwe Koloska
-function _getRelativePath($path)
-{
-    global $conf;
-    
-    $pattern = '/'.preg_quote(DOKU_INC, '/').'/';
-    $pname = preg_replace($pattern,'',$path);
-    return $pname;
+/// Return length of longest common prefix in an array of strings.
+function _commonPrefix($array) {
+    if(count($array) < 2) {
+        if(count($array) == 0)
+            return false; // empty array: undefined prefix
+        else
+            return strlen($array[0]); // 1 element: trivial case
+    }
+    $len = max(array_map('strlen',$array)); // initial upper limit: max length of all strings.
+    for($i = 1; $i < count($array) ; $i += 1)
+        for($j = 0 ; $j < $len ; $j += 1)
+            if($array[$i][$j] != $array[$i-1][$j])
+                $len = $j;
+    return $len;
 }
 
 // from http://snippets.dzone.com/posts/show/155 :
@@ -284,11 +329,4 @@ function directoryToArray($directory) {
 		closedir($handle);
 	}
 	return $array_items;
-}
-
-function filterBackups($InputElement) {
-	$result = !preg_match("/" . str_replace("/", "\/", $conf['mediadir'] . "/dw-backup-\d{8}-\d{6}\.tar[\.gz|\.bz2]?") . "/", $InputElement);
-  $result &= !preg_match("/" . str_replace("/", "\/", $conf['mediadir'] . "/\.DS_Store?") . "/", $InputElement);
-  $result &= !preg_match("/" . str_replace("/", "\/", $conf['mediadir'] . "/\._.?") . "/", $InputElement);
-	return $result;
 }
