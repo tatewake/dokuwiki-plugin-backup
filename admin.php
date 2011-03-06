@@ -238,6 +238,7 @@ var $backup = '';
                     }    
                 }
                 $this->filterdirs = array_combine($filterpaths,array_map('strlen',$filterpaths));
+                dbg(print_r($this->filterdirs,true));
                 // then filter away.
                 $files = array_filter($files,array($this,'filterFile'));
                 
@@ -246,14 +247,18 @@ var $backup = '';
                 if($basedir[strlen(basedir)-1] != DIRECTORY_SEPARATOR)
                     $basedir .= DIRECTORY_SEPARATOR;
                 
+                // Where to put these files?
+                $tarpath = $conf['mediadir'].'/'.strtr($this->getConf('backupnamespace'),':','/');
+                $this->_mkpath($tarpath);
+                
 				//Run the backup method
 				if (strcmp($this->backup['type'], 'PEAR') == 0)
-					$finalfile = $this->runPearBackup($files, $conf['savedir'].'/'.$finalfile, $tarfilename, $basedir, $compress_type);
+					$finalfile = $this->runPearBackup($files, $tarpath.'/'.$finalfile, $tarfilename, $basedir, $compress_type);
 				else	//exec and lazy both use the exec method
                 {
                     $this->_commonlength = strlen($basedir);
                     $files = array_map(array($this,'getRelativePath'),$files);
-					$finalfile = $this->runExecBackup($files, $conf['savedir'].'/'.$tarfilename, $tarfilename, $basedir);
+					$finalfile = $this->runExecBackup($files, $tarpath.'/'.$tarfilename, $tarfilename, $basedir);
                 }
 
 				if ($finalfile == '')
@@ -262,9 +267,8 @@ var $backup = '';
 				}
 				else
 				{
-                    rename($conf['savedir'].'/'.$finalfile,$conf['mediadir'].'/'.$finalfile);
 					print $this->plugin_locale_xhtml('download');
-					print $this->plugin_render('{{:'.$finalfile.'}}');
+					print $this->plugin_render('{{:'.$this->getConf('backupnamespace').':'.$finalfile.'}}');
 				}
 				ob_flush(); flush();
 			}
@@ -275,6 +279,7 @@ var $backup = '';
     
     // returns true if $fname is not in the filter list
     function filterFile($fname) {
+        dbg("filterFile($fname)");
         foreach($this->filterdirs as $dir->$len)
             if(!strncmp($dir,$fname,$len))
                 return false; // $fname has $dir as prefix.
@@ -284,6 +289,12 @@ var $backup = '';
     // subtract first few characters from $fname
     function getRelativePath($fname) {
         return substr($fname,$this->_commonlength);
+    }
+
+    function _mkpath($path)
+    {
+        if(@mkdir($path) or file_exists($path)) return true;
+        return (mkpath(dirname($path)) and mkdir($path));
     }
 }
 
