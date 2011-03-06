@@ -9,7 +9,6 @@
 if(!defined('DOKU_INC')) define('DOKU_INC',realpath(dirname(__FILE__).'/../../').'/');
 if(!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
 if(!defined('DOKU_INCLUDE')) define('DOKU_INCLUDE',DOKU_INC.'inc/');
-if(!defined('DOKU_CONF')) define('DOKU_CONF',DOKU_INC.'conf/');
 require_once(DOKU_PLUGIN . 'admin.php');
 
 include_once(DOKU_PLUGIN.'backup/pref_code.php');
@@ -225,49 +224,49 @@ var $backup = '';
 					if ($this->backup['media'])  			$files = array_merge($files, directoryToArray($conf['mediadir']));
 				}
 
-                // convert all filenames to canonical ones.
-                $files = array_map('realpath',$files);
+                // // convert all filenames to canonical ones.
+                // $files = array_map('realpath',$files);
                 
-                // construct list of filtered paths
-                $filterpaths = array_map('realpath',array_map('trim',explode($this->getConf['filterdirs'],',')));
-                foreach(array_keys($filterpaths) as $key) {
-                    if(!is_dir($filterpaths[$key])
-                        unset($filterpaths[$key]);     // remove non-directories
-                    else {
-                        // check if path has trailing slash; if not, add one.
-                        $lastchar = $filterpaths[$key][strlen($filterpaths[$key])-1];
-                        if($lastchar != DIRECTORY_SEPARATOR)
-                            $filterpaths[$key] .= DIRECTORY_SEPARATOR;
-                    }    
-                }
-                $this->filterdirs = array_combine($filterpaths,array_map('strlen',$filterpaths));
-                // then filter away.
-                $files = array_filter($files,array($this,'filterFile'));
+                // // construct list of filtered paths
+                // $filterpaths = array_map('realpath',array_map('trim',explode($this->getConf['filterdirs'],',')));
+                // foreach(array_keys($filterpaths) as $key) {
+                    // if(!is_dir($filterpaths[$key])
+                        // unset($filterpaths[$key]);     // remove non-directories
+                    // else {
+                        // // check if path has trailing slash; if not, add one.
+                        // $lastchar = $filterpaths[$key][strlen($filterpaths[$key])-1];
+                        // if($lastchar != DIRECTORY_SEPARATOR)
+                            // $filterpaths[$key] .= DIRECTORY_SEPARATOR;
+                    // }    
+                // }
+                // $this->filterdirs = array_combine($filterpaths,array_map('strlen',$filterpaths));
+                // // then filter away.
+                // $files = array_filter($files,array($this,'filterFile'));
                 
-                // Compute the common directory -- this will be subtracted from the filenames.
-                $basedir = dirname(substr($files[0],0,_commonPrefix($files)));
+                // // Compute the common directory -- this will be subtracted from the filenames.
+                // $basedir = dirname(substr($files[0],0,_commonPrefix($files)));
                 
-				//Run the backup method
-				if (strcmp($this->backup['type'], 'PEAR') == 0)
-					$finalfile = $this->runPearBackup($files, $conf['savedir'].'/'.$finalfile, $tarfilename, $basedir, $compress_type);
-				else	//exec and lazy both use the exec method
-                {
-                    $this->_commonlength = strlen($basedir);
-                    $files = array_map(array($this,'getRelativePath'),$files);
-					$finalfile = $this->runExecBackup($files, $conf['savedir'].'/'.$tarfilename, $tarfilename, $basedir);
-                }
+				// //Run the backup method
+				// if (strcmp($this->backup['type'], 'PEAR') == 0)
+					// $finalfile = $this->runPearBackup($files, $conf['savedir'].'/'.$finalfile, $tarfilename, $basedir, $compress_type);
+				// else	//exec and lazy both use the exec method
+                // {
+                    // $this->_commonlength = strlen($basedir);
+                    // $files = array_map(array($this,'getRelativePath'),$files);
+					// $finalfile = $this->runExecBackup($files, $conf['savedir'].'/'.$tarfilename, $tarfilename, $basedir);
+                // }
 
-				if ($finalfile == '')
-				{
-					print $this->plugin_locale_xhtml('memory');
-				}
-				else
-				{
-                    rename($conf['savedir'].'/'.$finalfile,$conf['mediadir'].'/'.$finalfile);
-					print $this->plugin_locale_xhtml('download');
-					print $this->plugin_render('{{:'.$finalfile.'}}');
-				}
-				ob_flush(); flush();
+				// if ($finalfile == '')
+				// {
+					// print $this->plugin_locale_xhtml('memory');
+				// }
+				// else
+				// {
+                    // rename($conf['savedir'].'/'.$finalfile,$conf['mediadir'].'/'.$finalfile);
+					// print $this->plugin_locale_xhtml('download');
+					// print $this->plugin_render('{{:'.$finalfile.'}}');
+				// }
+				// ob_flush(); flush();
 			}
 		}
 
