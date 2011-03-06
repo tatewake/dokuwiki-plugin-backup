@@ -233,8 +233,7 @@ var $backup = '';
                     if(!is_dir($filterpaths[$key]))
                         unset($filterpaths[$key]);     // remove non-directories
                     else { // check if path has trailing slash; if not, add one.
-                        $lastchar = $filterpaths[$key][strlen($filterpaths[$key])-1];
-                        if($lastchar != DIRECTORY_SEPARATOR)
+                        if($filterpaths[$key][strlen($filterpaths[$key])-1] != DIRECTORY_SEPARATOR)
                             $filterpaths[$key] .= DIRECTORY_SEPARATOR;
                     }    
                 }
@@ -242,9 +241,10 @@ var $backup = '';
                 // then filter away.
                 $files = array_filter($files,array($this,'filterFile'));
                 
-                dbg("commonprefix: "._commonPrefix($files));
                 // Compute the common directory -- this will be subtracted from the filenames.
-                $basedir = dirname(substr($files[0],0,_commonPrefix($files))).DIRECTORY_SEPARATOR;
+                $basedir = dirname(substr($files[0],0,_commonPrefix($files)).'aaaaa');
+                if($basedir[strlen(basedir)-1] != DIRECTORY_SEPARATOR)
+                    $basedir .= DIRECTORY_SEPARATOR;
                 
 				//Run the backup method
 				if (strcmp($this->backup['type'], 'PEAR') == 0)
