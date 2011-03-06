@@ -48,7 +48,7 @@ var $backup = '';
                 'date'   => '??',
                 'name'   => 'BackupTool for DokuWiki',
                 'desc'   => 'A tool to backup your data and configuration.',
-                'url'    => 'http://tatewake.com/wiki/projects:backuptool_for_dokuwiki',
+                'url'    => 'http://www.dokuwiki.org/plugin:backup',
             );
 	}
 
