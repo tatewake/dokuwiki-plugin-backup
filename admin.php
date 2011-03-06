@@ -104,13 +104,14 @@ var $backup = '';
 		$result = false;
 		$i = 0;	//mark for first file
 		$rval = 0;
-
+        dbg("runExecBackup(".print_r($files,true).", $tarfilename, $basename)");
 		//For each item, add it to the file.
 		foreach($files as $item)
 		{
 //			print("tar ". (($i != 0) ? "-rf " : "-cf ") .$tarfilename." "._getRelativePath($item).'<br/>');
 			if (!bt_exec("tar ". (($i != 0) ? "-rf " : "-cf ") .$tarfilename." "._getRelativePath($item)))
 			{
+                dbg("failed on $item");
 				return ''; //tar failed (possibly out of memory)
 			}
 			$i = 1;
