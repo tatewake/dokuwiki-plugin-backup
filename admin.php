@@ -229,16 +229,16 @@ var $backup = '';
                 
                 // construct list of filtered paths
                 $filterpaths = array_map('realpath',array_map('trim',explode($this->getConf['filterdirs'],',')));
-                foreach(array_keys($filterpaths) as $key) {
-                    if(!is_dir($filterpaths[$key])
-                        unset($filterpaths[$key]);     // remove non-directories
-                    else {
-                        // check if path has trailing slash; if not, add one.
-                        $lastchar = $filterpaths[$key][strlen($filterpaths[$key])-1];
-                        if($lastchar != DIRECTORY_SEPARATOR)
-                            $filterpaths[$key] .= DIRECTORY_SEPARATOR;
-                    }    
-                }
+                // foreach(array_keys($filterpaths) as $key) {
+                    // if(!is_dir($filterpaths[$key])
+                        // unset($filterpaths[$key]);     // remove non-directories
+                    // else {
+                        // // check if path has trailing slash; if not, add one.
+                        // $lastchar = $filterpaths[$key][strlen($filterpaths[$key])-1];
+                        // if($lastchar != DIRECTORY_SEPARATOR)
+                            // $filterpaths[$key] .= DIRECTORY_SEPARATOR;
+                    // }    
+                // }
                 // $this->filterdirs = array_combine($filterpaths,array_map('strlen',$filterpaths));
                 // // then filter away.
                 // $files = array_filter($files,array($this,'filterFile'));
