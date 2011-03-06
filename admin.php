@@ -38,14 +38,18 @@ var $backup = '';
 	 */
 	function getInfo()
 	{
-		return array(
-			'author' => 'Terence J. Grant, Andreas Wagner',
-			'email'  => 'tjgrant@tatewake.com, andreas.wagner@em.uni-frankfurt.de',
-			'date'   => '2008-08-24',
-			'name'   => 'BackupTool for DokuWiki',
-			'desc'   => 'A tool to backup your data and configuration.',
-			'url'    => 'http://tatewake.com/wiki/projects:backuptool_for_dokuwiki',
-		);
+        if(method_exists(DokuWiki_Admin_Plugin,"getInfo")) {
+             return parent::getInfo(); /// this will grab the data from the plugin.info.txt
+		} else
+			// Otherwise return some hardcoded data for old dokuwikis
+            return array(
+                'author' => 'Terence J. Grant, Andreas Wagner',
+                'email'  => 'tjgrant@tatewake.com, andreas.wagner@em.uni-frankfurt.de',
+                'date'   => '??',
+                'name'   => 'BackupTool for DokuWiki',
+                'desc'   => 'A tool to backup your data and configuration.',
+                'url'    => 'http://tatewake.com/wiki/projects:backuptool_for_dokuwiki',
+            );
 	}
 
 	/**
