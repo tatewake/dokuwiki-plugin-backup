@@ -242,8 +242,9 @@ var $backup = '';
                 // then filter away.
                 $files = array_filter($files,array($this,'filterFile'));
                 
+                dbg("commonprefix: "._commonPrefix($files));
                 // Compute the common directory -- this will be subtracted from the filenames.
-                $basedir = dirname(substr($files[0],0,_commonPrefix($files)));
+                $basedir = dirname(substr($files[0],0,_commonPrefix($files))).DIRECTORY_SEPARATOR;
                 
 				//Run the backup method
 				if (strcmp($this->backup['type'], 'PEAR') == 0)
