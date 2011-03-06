@@ -228,7 +228,7 @@ var $backup = '';
                 $files = array_map('realpath',$files);
                 
                 // construct list of filtered paths
-                $filterpaths = array_map('realpath',array_map('trim',explode($this->getConf['filterdirs'],',')));
+                $filterpaths = array_map('realpath',array_map('trim',explode($this->getConf['filterdirs'],"\n")));
                 foreach(array_keys($filterpaths) as $key) {
                     if(!is_dir($filterpaths[$key]))
                         unset($filterpaths[$key]);     // remove non-directories
