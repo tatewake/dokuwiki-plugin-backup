@@ -9,6 +9,7 @@
 if(!defined('DOKU_INC')) define('DOKU_INC',realpath(dirname(__FILE__).'/../../').'/');
 if(!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
 if(!defined('DOKU_INCLUDE')) define('DOKU_INCLUDE',DOKU_INC.'inc/');
+if(!defined('DOKU_CONF')) define('DOKU_CONF',DOKU_INC.'conf/');
 require_once(DOKU_PLUGIN . 'admin.php');
 
 include_once(DOKU_PLUGIN.'backup/pref_code.php');
@@ -191,14 +192,14 @@ var $backup = '';
 				$finalfile = $tarfilename.'.'.$compress_type;
 
 				//Generate array of files
-				$files = array(DOKU_INC . "conf/smileys.conf");
+				$files = (array)NULL;
 
 				if (strcmp($this->backup['type'], 'lazy') == 0)	//Use lazy method
 				{
 					if ($this->backup['pages'])					$files = array_merge($files, array($conf['datadir']));
 					if ($this->backup['revisions'])			$files = array_merge($files, array($conf['olddir']));
 					if ($this->backup['subscriptions'])	$files = array_merge($files, array($conf['metadir']));
-					if ($this->backup['config'])				$files = array_merge($files, array(DOKU_INC . "conf"));
+					if ($this->backup['config'])				$files = array_merge($files, array(DOKU_CONF));
 					if ($this->backup['templates'])			$files = array_merge($files, array(DOKU_INC . "lib/tpl"));
 					if ($this->backup['plugins'])				$files = array_merge($files, array(DOKU_INC . "lib/plugins"));
 					if ($this->backup['media'])					$files = array_merge($files, array($conf['mediadir']));
@@ -208,7 +209,7 @@ var $backup = '';
 					if ($this->backup['pages'])					$files = array_merge($files, directoryToArray($conf['datadir']));
 					if ($this->backup['revisions'])			$files = array_merge($files, directoryToArray($conf['olddir']));
 					if ($this->backup['subscriptions'])	$files = array_merge($files, directoryToArray($conf['metadir']));
-					if ($this->backup['config'])				$files = array_merge($files, directoryToArray(DOKU_INC . "conf"));
+					if ($this->backup['config'])				$files = array_merge($files, directoryToArray(DOKU_CONF));
 					if ($this->backup['templates'])			$files = array_merge($files, directoryToArray(DOKU_INC . "lib/tpl"));
 					if ($this->backup['plugins'])				$files = array_merge($files, directoryToArray(DOKU_INC . "lib/plugins"));
 					if ($this->backup['media'])
@@ -220,9 +221,9 @@ var $backup = '';
 
 				//Run the backup method
 				if (strcmp($this->backup['type'], 'PEAR') == 0)
-					$finalfile = $this->runPearBackup($files, DOKU_INC.'data/media/'.$finalfile, $tarfilename, $compress_type);
+					$finalfile = $this->runPearBackup($files, $conf['savedir'].$finalfile, $tarfilename, $compress_type);
 				else	//exec and lazy both use the exec method
-					$finalfile = $this->runExecBackup($files, DOKU_INC.'data/media/'.$tarfilename, $tarfilename);
+					$finalfile = $this->runExecBackup($files, $conf['savedir'].$tarfilename, $tarfilename);
 
 				if ($finalfile == '')
 				{
@@ -230,6 +231,7 @@ var $backup = '';
 				}
 				else
 				{
+                    rename($conf['savedir'].'/'.$finalfile,$conf['mediadir'].'/'.$finalfile);
 					print $this->plugin_locale_xhtml('download');
 					print $this->plugin_render('{{:'.$finalfile.'}}');
 				}
