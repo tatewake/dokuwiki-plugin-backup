@@ -106,16 +106,17 @@ var $backup = '';
 		$rval = 0;
         dbg("runExecBackup(".print_r($files,true).", '$tarfilename', '$basename', '$basedir')");
 		
-        // Put all the tarred filenames into a manifest.
+        // Put all to-be-tarred filenames into a manifest.
         $manifile = $tarfilename.'.manifest.txt';
         $manihandle = fopen($manifile, 'w');
-        foreach($files as $item) fwrite($item."\n");
+        foreach($files as $item) fwrite($manihandle,$item."\n");
         fclose($manihandle);
         
         $tarfilename = escapeshellarg($tarfilename);
         $basedir = escapeshellarg($basedir);
         $manifile = escapeshellarg($manifile);
-        if (!bt_exec("tar -cf ".$tarfilename." -C ".$basedir." --files-from ".$manifile))
+        dbg("tar -cf $tarfilename -C $basedir --files-from $manifile");
+        if (!bt_exec("tar -cf $tarfilename -C $basedir --files-from $manifile"))
             return ''; //tar failed (possibly out of memory)
 
 		if (bt_exec('bzip2 --version'))
