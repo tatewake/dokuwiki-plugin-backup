@@ -231,6 +231,9 @@ var $backup = '';
                 $files = array_map('realpath',$files);
                 
                 // construct list of filtered paths
+                dbg(print_r($this->getConf['filterdirs'],true));
+                dbg(print_r(explode($this->getConf['filterdirs'],"\n"),true));
+                dbg(print_r(array_map('trim',explode($this->getConf['filterdirs'],"\n")),true));
                 $filterpaths = array_map('realpath',array_map('trim',explode($this->getConf['filterdirs'],"\n")));
                 dbg(print_r($this->filterpaths,true));
                 foreach(array_keys($filterpaths) as $key) {
@@ -274,7 +277,7 @@ var $backup = '';
 			}
 		}
         
-        $extantbackups = glob($this->_mkpath($tarpath).'/dw-backup-*');
+        $extantbackups = glob($tarpath.'/dw-backup-*');
         if(count($extantbackups) > 0) {
             print '<pre>';
             foreach ($extantbackups as $fname)
