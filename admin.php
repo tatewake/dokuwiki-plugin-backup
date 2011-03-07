@@ -109,10 +109,9 @@ var $backup = '';
 		fclose($manihandle);
 		
 		$tarfilename = escapeshellarg($tarfilename);
-		$basedir = escapeshellarg($basedir);
-		$manifile = escapeshellarg($manifile);
-		//dbg("tar -cf $tarfilename -C $basedir --files-from $manifile");
-		if (!bt_exec("tar -cf $tarfilename -C $basedir --files-from $manifile"))
+		$res = bt_exec("tar -cf $tarfilename -C ".escapeshellarg($basedir)." --files-from ".escapeshellarg($manifile));
+		unlink($manifile);
+		if (!$res)
 			return ''; //tar failed (possibly out of memory)
 
 		if (bt_exec('bzip2 --version'))
