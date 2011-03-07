@@ -2,4 +2,4 @@
 
 $meta['filterdirs'] = array('');
 $meta['backupnamespace'] = array('string');
-$meta['filterbackups'] = array('onoff');
+//$meta['filterbackups'] = array('onoff');

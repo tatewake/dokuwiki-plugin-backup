@@ -185,7 +185,7 @@ var $backup = '';
 				print '</table>';
 
 				print '<br />';
-				print '<p><input type="submit" value="'.$this->getLang('bt_create_backup').'"></p></center>';
+				print '<p><input type="submit" class="button" value="'.$this->getLang('bt_create_backup').'"></p></center>';
 				print '</form>';
 			}
 			elseif ($this->state == 1)
@@ -312,10 +312,8 @@ var $backup = '';
 			ptln('<form action="'.wl($ID).'" method="post">');
 			ptln('	<input type="hidden" name="do"   value="admin" />');
 			ptln('	<input type="hidden" name="page" value="'.$this->getPluginName().'" />');
-			ptln('<div style="float:left;"><input type="submit" name="delete[all]" value="Delete"/></div>');
-			ptln('<div>');
+			ptln('<input type="submit" class="button" name="delete[all]" value="Delete"/>');
 			print $this->plugin_render($buildrender);
-			ptln('</div>');
 			ptln('</form>');
 		}
 		
