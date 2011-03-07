@@ -232,14 +232,16 @@ var $backup = '';
                 
                 // construct list of filtered paths
                 dbg(print_r(explode("\n",$this->getConf('filterdirs')),true));
-                $filterpaths = array_map('realpath',array_map('trim',explode("\n",$this->getConf('filterdirs'))));
+                $filterpaths = array_map('trim',explode("\n",$this->getConf('filterdirs')));
                 dbg(print_r($filterpaths,true));
                 foreach(array_keys($filterpaths) as $key) {
                     if(!is_dir($filterpaths[$key]))
-                        unset($filterpaths[$key]);     // remove non-directories
-                    else { // check if path has trailing slash; if not, add one.
-                        if($filterpaths[$key][strlen($filterpaths[$key])-1] != DIRECTORY_SEPARATOR)
-                            $filterpaths[$key] .= DIRECTORY_SEPARATOR;
+                        unset($filterpaths[$key]); // remove non-directories
+                    else { // convert to realpath, check if path has trailing slash; if not, add one.
+                        $dir = realpath($filterpaths[$key]);
+                        if($dir[$key][strlen($dir[$key])-1] != DIRECTORY_SEPARATOR)
+                            $dir .= DIRECTORY_SEPARATOR;
+                        $filterpaths[$key] = $dir;
                     }    
                 }
                 $this->filterdirs = array_combine($filterpaths,array_map('strlen',$filterpaths));
@@ -289,12 +291,12 @@ var $backup = '';
     
     // returns true if $fname is not in the filter list
     function filterFile($fname) {
+        dbg("filterFile($fname)");
         foreach($this->filterdirs as $dir->$len)
             if(!strncmp($dir,$fname,$len)) {
-                dbg("filterFile($fname) -- FILTER");
+                dbg("     ^^^ -- FILTER");
                 return false; // $fname has $dir as prefix.
             }
-        dbg("filterFile($fname)");
         return true; // $fname does not match any prefix.
     }
     
