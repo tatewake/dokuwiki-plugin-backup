@@ -144,6 +144,8 @@ var $backup = '';
 		{
             if($this->state == 2) {
                 $killsuccess = true;
+                dbg("Invoking filekiller.");
+                ob_flush(); flush();
                 $extantbackups = glob($tarpath.'/dw-backup-*');
                 foreach($extantbackups as $kill)
                     if(!unlink($kill)) {
@@ -153,7 +155,6 @@ var $backup = '';
                 if($killsuccess) {
                     ptln('<div class="success">'.'All backups '.htmlescapechars($tarpath.'/dw-backup-*').' deleted.'.'</div>');
                 }
-                print $this->plugin_locale_xhtml('intro');
             }
             
 			if ($this->state == 0 || $this->state == 2)
