@@ -285,7 +285,8 @@ var $backup = '';
 				else
 				{
 					print $this->plugin_locale_xhtml('download');
-					print $this->plugin_render('{{:'.$this->getConf('backupnamespace').':'.$finalfile.'}}');
+					$filesize = round(filesize($tarpath.'/'.$finalfile)/1024);
+					print $this->plugin_render('{{:'.$this->getConf('backupnamespace').':'.$finalfile.'}} ('.$filesize.' kiB)';
 					
 					if(count($this->filterresult)>0) {
 						ptln("Files not backed up (blacklisted):<ul>");
@@ -308,7 +309,7 @@ var $backup = '';
 			$buildrender = '';
 			foreach ($extantbackups as $fname) {
 				$filesize = round(filesize($fname)/1024);
-				$buildrender .= '{{:'.$this->getConf('backupnamespace').':'.basename($fname).'}} ('.$filesize.' kiB)\\\\';
+				$buildrender .= '{{:'.$this->getConf('backupnamespace').':'.basename($fname).'}} ('.$filesize." kiB)\\\\\n";
 			}
 			print $this->plugin_render($buildrender);
 			ptln('</form>');
