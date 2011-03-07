@@ -296,7 +296,7 @@ var $backup = '';
             ptln('<div style="float:left;"><input type="submit" value="delete[all]"/></div>');
             ptln('<pre>');
             foreach ($extantbackups as $fname)
-                print htmlescapechars($fname)."\n";
+                print htmlspecialchars($fname)."\n";
             ptln('</pre>');
             ptln('</form>');
         }
