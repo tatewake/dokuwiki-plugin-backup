@@ -309,7 +309,7 @@ var $backup = '';
 			$buildrender = '';
 			foreach ($extantbackups as $fname) {
 				$filesize = round(filesize($fname)/1024);
-				$buildrender .= '{{:'.$this->getConf('backupnamespace').':'.basename($fname).'}} ('.$filesize." kiB)\\\\\n";
+				$buildrender .= '{{:'.$this->getConf('backupnamespace').':'.basename($fname).'}} ('.$filesize.' kiB)\\\\'."\n";
 			}
 			print $this->plugin_render($buildrender);
 			ptln('</form>');
