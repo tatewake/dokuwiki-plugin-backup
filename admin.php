@@ -231,7 +231,7 @@ var $backup = '';
                 $files = array_map('realpath',$files);
                 
                 // construct list of filtered paths
-                dbg(print_r($this->getConf['filterdirs'],true));
+                dbg('$this->getConf[\'filterdirs\'] -> '.$this->getConf['filterdirs']);
                 dbg(print_r(explode($this->getConf['filterdirs'],"\n"),true));
                 dbg(print_r(array_map('trim',explode($this->getConf['filterdirs'],"\n")),true));
                 $filterpaths = array_map('realpath',array_map('trim',explode($this->getConf['filterdirs'],"\n")));
