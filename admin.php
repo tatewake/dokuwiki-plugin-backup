@@ -249,9 +249,10 @@ var $backup = '';
                 
                 dbg("Postfiler: ".print_r($files,true));
                 
+                dbg("Commonprefix: ".substr($files[0],0,_commonPrefix($files)));
                 // Compute the common directory -- this will be subtracted from the filenames.
                 $basedir = dirname(substr($files[0],0,_commonPrefix($files)).'aaaaa');
-                if($basedir[strlen(basedir)-1] != DIRECTORY_SEPARATOR)
+                if($basedir[strlen($basedir)-1] != DIRECTORY_SEPARATOR)
                     $basedir .= DIRECTORY_SEPARATOR;
 
                 dbg("\$basedir = $basedir");
