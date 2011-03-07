@@ -249,7 +249,7 @@ var $backup = '';
                 
                 dbg("Postfiler: ".print_r($files,true));
                 
-                dbg("Commonprefix: ".substr($files[0],0,_commonPrefix($files)));
+                dbg("Commonprefix: "._commonPrefix($files)." -> ".substr($files[0],0,_commonPrefix($files)));
                 // Compute the common directory -- this will be subtracted from the filenames.
                 $basedir = dirname(substr($files[0],0,_commonPrefix($files)).'aaaaa');
                 if($basedir[strlen($basedir)-1] != DIRECTORY_SEPARATOR)
@@ -331,10 +331,13 @@ function _commonPrefix($array) {
             return strlen($array[0]); // 1 element: trivial case
     }
     $len = max(array_map('strlen',$array)); // initial upper limit: max length of all strings.
-    for($i = 1; $i < count($array) ; $i += 1)
+    $prevval = reset($array);
+    while(($newval = next($array)) !== FALSE) {
         for($j = 0 ; $j < $len ; $j += 1)
-            if($array[$i][$j] != $array[$i-1][$j])
+            if($newval[$j] != $prevval[$j])
                 $len = $j;
+        $prevval = $newval;
+    }
     return $len;
 }
 
