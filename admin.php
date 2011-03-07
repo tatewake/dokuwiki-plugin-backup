@@ -285,9 +285,9 @@ var $backup = '';
 				else
 				{
 					print $this->plugin_locale_xhtml('download');
+					print '<div class="success">';
 					$filesize = round(filesize($tarpath.'/'.$finalfile)/1024.0);
-					print '<div class="success" style="padding:3em;">';
-					print $this->plugin_render('{{:'.$this->getConf('backupnamespace').':'.$finalfile.'}} ('.$filesize.' kiB)');
+					print $this->plugin_render('Download: {{:'.$this->getConf('backupnamespace').':'.$finalfile.'}} ('.$filesize.' kiB)');
 					print '</div>';
 					
 					if(count($this->filterresult)>0) {
@@ -303,17 +303,18 @@ var $backup = '';
 		
 		$extantbackups = glob($tarpath.'/dw-backup-*');
 		if(count($extantbackups) > 0) {
+			$buildrender = '';
+			foreach ($extantbackups as $fname) {
+				$filesize = round(filesize($fname)/1024.0);
+				$buildrender .= '{{:'.$this->getConf('backupnamespace').':'.basename($fname).'}} ('.$filesize." kiB)\\\\\n";
+			}
+			
 			print $this->plugin_locale_xhtml('oldbackups');
 			ptln('<form action="'.wl($ID).'" method="post">');
 			ptln('	<input type="hidden" name="do"   value="admin" />');
 			ptln('	<input type="hidden" name="page" value="'.$this->getPluginName().'" />');
 			ptln('<div style="float:left;"><input type="submit" name="delete[all]" value="Delete"/></div>');
-			$buildrender = '';
 			prln('<div>');
-			foreach ($extantbackups as $fname) {
-				$filesize = round(filesize($fname)/1024.0);
-				$buildrender .= '{{:'.$this->getConf('backupnamespace').':'.basename($fname).'}} ('.$filesize." kiB)\\\\\n";
-			}
 			print $this->plugin_render($buildrender);
 			prln('</div>');
 			ptln('</form>');
