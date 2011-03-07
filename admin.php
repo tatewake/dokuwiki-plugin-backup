@@ -231,10 +231,7 @@ var $backup = '';
                 $files = array_map('realpath',$files);
                 
                 // construct list of filtered paths
-                dbg('$this->getConf[\'filterdirs\'] -> '.$this->getConf['filterdirs']);
-                dbg(print_r(explode($this->getConf['filterdirs'],"\n"),true));
-                dbg(print_r(array_map('trim',explode($this->getConf['filterdirs'],"\n")),true));
-                $filterpaths = array_map('realpath',array_map('trim',explode($this->getConf['filterdirs'],"\n")));
+                $filterpaths = array_map('realpath',array_map('trim',explode($this->getConf('filterdirs'),"\n")));
                 dbg(print_r($this->filterpaths,true));
                 foreach(array_keys($filterpaths) as $key) {
                     if(!is_dir($filterpaths[$key]))
@@ -291,10 +288,11 @@ var $backup = '';
     
     // returns true if $fname is not in the filter list
     function filterFile($fname) {
-//        dbg("filterFile($fname)");
         foreach($this->filterdirs as $dir->$len)
-            if(!strncmp($dir,$fname,$len))
+            if(!strncmp($dir,$fname,$len)) {
+                dbg("filterFile($fname) -- FILTER");
                 return false; // $fname has $dir as prefix.
+            }
         return true; // $fname does not match any prefix.
     }
     
