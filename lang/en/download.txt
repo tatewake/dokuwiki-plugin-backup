@@ -1,7 +1,6 @@
 **Backup complete!**
 
 **Notes**:
-  * This file is in the root of your media directory, you should delete after you download it.
-    * Older backups are **never deleted**; it is up to you to delete them if you so choose.
+  * Older backups are **never deleted**; it is up to you to delete them if you so choose.
   * The final backup file is named //dw-backup-YearMonthDay-HourMinuteSecond.tar.bz2//, and time is in **24 hour format**.
     * The file is formatted this way so that backups will **always** be sorted correctly. I suggest you not change this, but it's up to you.

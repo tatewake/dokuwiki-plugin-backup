@@ -142,6 +142,7 @@ var $backup = '';
 		}
 		else
 		{
+            dbg(print_r($_REQUEST,true));
             if($this->state == 2) {
                 $killsuccess = true;
                 ob_flush(); flush();
