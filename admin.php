@@ -315,7 +315,7 @@ var $backup = '';
 			ptln('<div style="float:left;"><input type="submit" name="delete[all]" value="Delete"/></div>');
 			dbg($buildrender);
 			prln('<div>');
-			print $this->plugin_render($buildrender);
+			//print $this->plugin_render($buildrender);
 			prln('</div>');
 			ptln('</form>');
 		}
