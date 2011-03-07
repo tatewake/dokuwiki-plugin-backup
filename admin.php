@@ -308,12 +308,12 @@ var $backup = '';
 				$filesize = round(filesize($fname)/1024.0);
 				$buildrender .= '{{:'.$this->getConf('backupnamespace').':'.basename($fname).'}} ('.$filesize." kiB)\\\\\n";
 			}
-			
 			print $this->plugin_locale_xhtml('oldbackups');
 			ptln('<form action="'.wl($ID).'" method="post">');
 			ptln('	<input type="hidden" name="do"   value="admin" />');
 			ptln('	<input type="hidden" name="page" value="'.$this->getPluginName().'" />');
 			ptln('<div style="float:left;"><input type="submit" name="delete[all]" value="Delete"/></div>');
+			prln($buildrender);
 			prln('<div>');
 			print $this->plugin_render($buildrender);
 			prln('</div>');
