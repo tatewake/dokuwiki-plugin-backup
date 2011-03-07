@@ -202,7 +202,7 @@ var $backup = '';
 				$bt_settings['plugins']				= strcmp($this->backup['plugins'], 'on') == 0 ? 'checked' : '';
 				bt_save();
                 
-                dbg(print_r($this->backup,true));
+                //dbg(print_r($this->backup,true));
 				//Print outgoing message...
 				print $this->plugin_locale_xhtml('outro');
                 
