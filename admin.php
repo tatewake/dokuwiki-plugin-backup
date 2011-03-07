@@ -231,6 +231,8 @@ var $backup = '';
                 $files = array_map('realpath',$files);
                 
                 // construct list of filtered paths
+                dbg(print_r(explode($this->getConf('filterdirs'),"\n"),true));
+                dbg(print_r(array_map('trim',explode($this->getConf('filterdirs'),"\n")),true));
                 $filterpaths = array_map('realpath',array_map('trim',explode($this->getConf('filterdirs'),"\n")));
                 dbg(print_r($filterpaths,true));
                 foreach(array_keys($filterpaths) as $key) {
@@ -293,6 +295,7 @@ var $backup = '';
                 dbg("filterFile($fname) -- FILTER");
                 return false; // $fname has $dir as prefix.
             }
+        dbg("filterFile($fname)");
         return true; // $fname does not match any prefix.
     }
     
