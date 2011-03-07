@@ -136,6 +136,9 @@ var $backup = '';
 		$bt_pearWorks = (class_exists("Archive_Tar")) ? true : false;
 		$bt_execWorks = bt_exec("tar --version");
 
+        // Where to put these files?
+        $tarpath = $conf['mediadir'].'/'.strtr($this->getConf('backupnamespace'),':','/');
+        
 		if (!($bt_pearWorks || $bt_execWorks))	//if neither works, display the error message.
 		{
 			print $this->plugin_locale_xhtml('error');
@@ -229,6 +232,7 @@ var $backup = '';
                 
                 // construct list of filtered paths
                 $filterpaths = array_map('realpath',array_map('trim',explode($this->getConf['filterdirs'],"\n")));
+                dbg(print_r($this->filterpaths,true));
                 foreach(array_keys($filterpaths) as $key) {
                     if(!is_dir($filterpaths[$key]))
                         unset($filterpaths[$key]);     // remove non-directories
@@ -246,11 +250,7 @@ var $backup = '';
                 $basedir = dirname(substr($files[0],0,_commonPrefix($files)).'aaaaa');
                 if($basedir[strlen(basedir)-1] != DIRECTORY_SEPARATOR)
                     $basedir .= DIRECTORY_SEPARATOR;
-                
-                // Where to put these files?
-                $tarpath = $conf['mediadir'].'/'.strtr($this->getConf('backupnamespace'),':','/');
-                $this->_mkpath($tarpath);
-                
+                                
 				//Run the backup method
 				if (strcmp($this->backup['type'], 'PEAR') == 0)
 					$finalfile = $this->runPearBackup($files, $tarpath.'/'.$finalfile, $tarfilename, $basedir, $compress_type);
@@ -273,7 +273,15 @@ var $backup = '';
 				ob_flush(); flush();
 			}
 		}
-
+        
+        $extantbackups = glob($this->_mkpath($tarpath).'/dw-backup-*');
+        if(count($extantbackups) > 0) {
+            print '<pre>';
+            foreach ($extantbackups as $fname)
+                print $fname."\n";
+            print '</pre>';
+        }
+        
 		print $this->plugin_locale_xhtml('donate');
 	}
     
