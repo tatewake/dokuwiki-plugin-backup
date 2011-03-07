@@ -1,5 +1,5 @@
 <?php
 
-$conf['filterdirs'] = $GLOBALS['conf']['mediadir'].'/backup'."\n".
-                      $GLOBALS['conf']['mediadir'].'/latex'."\n";
-$conf['backupnamespace'] = 'backup';
+$conf['filterdirs'] = "/path/to/my/dokuwiki/data/media/latex\n";
+$conf['backupnamespace'] = 'wiki:backup';
+$conf['filterbackups'] = true;
