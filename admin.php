@@ -142,7 +142,7 @@ var $backup = '';
 		}
 		else
 		{
-            dbg(print_r($_REQUEST,true));
+            //dbg(print_r($_REQUEST,true));
             if($this->state == 2) {
                 $killsuccess = true;
                 ob_flush(); flush();
@@ -202,8 +202,7 @@ var $backup = '';
 				$bt_settings['plugins']				= strcmp($this->backup['plugins'], 'on') == 0 ? 'checked' : '';
 				bt_save();
                 
-                dbg(print_r($bt_settings,true));
-                dbg(print_r($backup,true));
+                dbg(print_r($this->backup,true));
 				//Print outgoing message...
 				print $this->plugin_locale_xhtml('outro');
                 
@@ -243,6 +242,7 @@ var $backup = '';
 
                 // convert all filenames to canonical ones.
                 $files = array_map('realpath',$files);
+                //dbg("Files prefilter: ".print_r($files,true));
                 
                 // construct list of filtered paths
                 $filterpaths = array_map('trim',explode("\n",$this->getConf('filterdirs')));
@@ -258,7 +258,9 @@ var $backup = '';
                 }
                 $this->filterdirs = array_combine($filterpaths,array_map('strlen',$filterpaths));
                 // then filter away and sort.
-                $files = sort(array_filter($files,array($this,'filterFile')),SORT_LOCALE_STRING);
+                $files = array_filter($files,array($this,'filterFile'));
+                sort($files,SORT_LOCALE_STRING);
+                //dbg("Files postfilter: ".print_r($files,true));
                 
                 // dbg("Postfiler: ".print_r($files,true));
                 // Compute the common directory -- this will be subtracted from the filenames.
