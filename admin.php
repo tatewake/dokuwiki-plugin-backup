@@ -142,7 +142,7 @@ var $backup = '';
 		}
 		else
 		{
-            if($this->state == 3) {
+            if($this->state == 2) {
                 $killsuccess = true;
                 $extantbackups = glob($tarpath.'/dw-backup-*');
                 foreach($extantbackups as $kill)
@@ -155,7 +155,8 @@ var $backup = '';
                 }
                 print $this->plugin_locale_xhtml('intro');
             }
-			if ($this->state == 0 || $this->state == 3)
+            
+			if ($this->state == 0 || $this->state == 2)
 			{
 				//Print Backup introduction page
 				print $this->plugin_locale_xhtml('intro');
