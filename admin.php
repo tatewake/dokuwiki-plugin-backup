@@ -293,8 +293,8 @@ var $backup = '';
             ptln('<form action="'.wl($ID).'" method="post">');
             ptln('	<input type="hidden" name="do"   value="admin" />');
             ptln('	<input type="hidden" name="page" value="'.$this->getPluginName().'" />');
-            ptln('<pre>');
             ptln('<div style="float:left;"><input type="submit" value="delete[all]"/></div>');
+            ptln('<pre>');
             foreach ($extantbackups as $fname)
                 print htmlescapechars($fname)."\n";
             ptln('</pre>');
