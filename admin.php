@@ -239,7 +239,7 @@ var $backup = '';
                         unset($filterpaths[$key]); // remove non-directories
                     else { // convert to realpath, check if path has trailing slash; if not, add one.
                         $dir = realpath($filterpaths[$key]);
-                        if($dir[$key][strlen($dir[$key])-1] != DIRECTORY_SEPARATOR)
+                        if($dir[strlen($dir)-1] != DIRECTORY_SEPARATOR)
                             $dir .= DIRECTORY_SEPARATOR;
                         $filterpaths[$key] = $dir;
                     }    
@@ -292,7 +292,7 @@ var $backup = '';
     // returns true if $fname is not in the filter list
     function filterFile($fname) {
         dbg("filterFile($fname)");
-        foreach($this->filterdirs as $dir->$len)
+        foreach($this->filterdirs as $dir=>$len)
             if(!strncmp($dir,$fname,$len)) {
                 dbg("     ^^^ -- FILTER");
                 return false; // $fname has $dir as prefix.
