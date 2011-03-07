@@ -144,17 +144,15 @@ var $backup = '';
 		{
             if($this->state == 2) {
                 $killsuccess = true;
-                dbg("Invoking filekiller.");
                 ob_flush(); flush();
                 $extantbackups = glob($tarpath.'/dw-backup-*');
                 foreach($extantbackups as $kill)
-                    if(!unlink($kill)) {
+                    if(unlink($kill)) {
+                        ptln('<div class="info">'.'Deleted file: '.htmlspecialchars($kill).'</div>');
+                    } else {
                         $killsuccess = false;
                         ptln('<div class="error">'.'Could not delete: '.htmlspecialchars($kill).'</div>');
                     }
-                if($killsuccess) {
-                    ptln('<div class="success">'.'All backups '.htmlescapechars($tarpath.'/dw-backup-*').' deleted.'.'</div>');
-                }
             }
             
 			if ($this->state == 0 || $this->state == 2)
