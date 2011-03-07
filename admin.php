@@ -274,6 +274,7 @@ var $backup = '';
 					print $this->plugin_render('{{:'.$this->getConf('backupnamespace').':'.$finalfile.'}}');
 				}
 				ob_flush(); flush();
+                dbg(print_r($this->conf,true));
 			}
 		}
         
@@ -290,7 +291,7 @@ var $backup = '';
     
     // returns true if $fname is not in the filter list
     function filterFile($fname) {
-        dbg("filterFile($fname)");
+//        dbg("filterFile($fname)");
         foreach($this->filterdirs as $dir->$len)
             if(!strncmp($dir,$fname,$len))
                 return false; // $fname has $dir as prefix.
