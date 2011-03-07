@@ -231,9 +231,7 @@ var $backup = '';
                 $files = array_map('realpath',$files);
                 
                 // construct list of filtered paths
-                dbg(print_r(explode("\n",$this->getConf('filterdirs')),true));
                 $filterpaths = array_map('trim',explode("\n",$this->getConf('filterdirs')));
-                dbg(print_r($filterpaths,true));
                 foreach(array_keys($filterpaths) as $key) {
                     if(!is_dir($filterpaths[$key]))
                         unset($filterpaths[$key]); // remove non-directories
@@ -245,7 +243,7 @@ var $backup = '';
                     }    
                 }
                 $this->filterdirs = array_combine($filterpaths,array_map('strlen',$filterpaths));
-                dbg(print_r($this->filterdirs,true));
+                dbg("Filterlist: ".print_r($this->filterdirs,true));
                 // then filter away.
                 $files = array_filter($files,array($this,'filterFile'));
                 
@@ -253,7 +251,7 @@ var $backup = '';
                 $basedir = dirname(substr($files[0],0,_commonPrefix($files)).'aaaaa');
                 if($basedir[strlen(basedir)-1] != DIRECTORY_SEPARATOR)
                     $basedir .= DIRECTORY_SEPARATOR;
-                                
+                dbg("\$basedir = $basedir");
 				//Run the backup method
 				if (strcmp($this->backup['type'], 'PEAR') == 0)
 					$finalfile = $this->runPearBackup($files, $tarpath.'/'.$finalfile, $tarfilename, $basedir, $compress_type);
@@ -291,10 +289,9 @@ var $backup = '';
     
     // returns true if $fname is not in the filter list
     function filterFile($fname) {
-        dbg("filterFile($fname)");
         foreach($this->filterdirs as $dir=>$len)
             if(!strncmp($dir,$fname,$len)) {
-                dbg("     ^^^ -- FILTER");
+                dbg("filterFile($fname) -- FILTER");
                 return false; // $fname has $dir as prefix.
             }
         return true; // $fname does not match any prefix.
