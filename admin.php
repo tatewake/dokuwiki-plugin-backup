@@ -100,7 +100,7 @@ var $backup = '';
 		$result = false;
 		$i = 0;	//mark for first file
 		$rval = 0;
-	  dbg("runExecBackup(".print_r($files,true).", '$tarfilename', '$basename', '$basedir')");
+	  //dbg("runExecBackup(".print_r($files,true).", '$tarfilename', '$basename', '$basedir')");
 		
 		// Put all to-be-tarred filenames into a manifest.
 		$manifile = $tarfilename.'.manifest.txt';
@@ -111,7 +111,7 @@ var $backup = '';
 		$tarfilename = escapeshellarg($tarfilename);
 		$basedir = escapeshellarg($basedir);
 		$manifile = escapeshellarg($manifile);
-		dbg("tar -cf $tarfilename -C $basedir --files-from $manifile");
+		//dbg("tar -cf $tarfilename -C $basedir --files-from $manifile");
 		if (!bt_exec("tar -cf $tarfilename -C $basedir --files-from $manifile"))
 			return ''; //tar failed (possibly out of memory)
 
@@ -286,7 +286,9 @@ var $backup = '';
 				{
 					print $this->plugin_locale_xhtml('download');
 					$filesize = round(filesize($tarpath.'/'.$finalfile)/1024.0);
+					print '<div class="success" style="padding:3em;">';
 					print $this->plugin_render('{{:'.$this->getConf('backupnamespace').':'.$finalfile.'}} ('.$filesize.' kiB)');
+					print '</div>';
 					
 					if(count($this->filterresult)>0) {
 						ptln("Files not backed up (blacklisted):<ul>");
@@ -307,11 +309,13 @@ var $backup = '';
 			ptln('	<input type="hidden" name="page" value="'.$this->getPluginName().'" />');
 			ptln('<div style="float:left;"><input type="submit" name="delete[all]" value="Delete"/></div>');
 			$buildrender = '';
+			prln('<div>');
 			foreach ($extantbackups as $fname) {
 				$filesize = round(filesize($fname)/1024.0);
 				$buildrender .= '{{:'.$this->getConf('backupnamespace').':'.basename($fname).'}} ('.$filesize." kiB)\\\\\n";
 			}
 			print $this->plugin_render($buildrender);
+			prln('</div>');
 			ptln('</form>');
 		}
 		
