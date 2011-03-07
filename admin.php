@@ -247,10 +247,13 @@ var $backup = '';
                 // then filter away.
                 $files = array_filter($files,array($this,'filterFile'));
                 
+                dbg("Postfiler: ".print_r($files,true));
+                
                 // Compute the common directory -- this will be subtracted from the filenames.
                 $basedir = dirname(substr($files[0],0,_commonPrefix($files)).'aaaaa');
                 if($basedir[strlen(basedir)-1] != DIRECTORY_SEPARATOR)
                     $basedir .= DIRECTORY_SEPARATOR;
+
                 dbg("\$basedir = $basedir");
 				//Run the backup method
 				if (strcmp($this->backup['type'], 'PEAR') == 0)
