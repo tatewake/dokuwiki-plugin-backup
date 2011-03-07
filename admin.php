@@ -313,7 +313,6 @@ var $backup = '';
 			ptln('	<input type="hidden" name="do"   value="admin" />');
 			ptln('	<input type="hidden" name="page" value="'.$this->getPluginName().'" />');
 			ptln('<div style="float:left;"><input type="submit" name="delete[all]" value="Delete"/></div>');
-			dbg($buildrender);
 			ptln('<div>');
 			print $this->plugin_render($buildrender);
 			ptln('</div>');
