@@ -1,5 +1,5 @@
 <?php
 
-$meta['filterdirs'] = array('');
 $meta['backupnamespace'] = array('string');
-//$meta['filterbackups'] = array('onoff');
+$meta['filterdirs'] = array('');
+$meta['filterbackups'] = array('onoff');
