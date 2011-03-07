@@ -266,8 +266,9 @@ var $backup = '';
 				$basedir = dirname(substr($files[0],0,_commonPrefix($files)).'aaaaa');
 				if($basedir[strlen($basedir)-1] != DIRECTORY_SEPARATOR)
 					$basedir .= DIRECTORY_SEPARATOR;
-
+				
 				//Run the backup method
+				$this->_mkpath($tarpath);
 				if (strcmp($this->backup['type'], 'PEAR') == 0)
 					$finalfile = $this->runPearBackup($files, $tarpath.'/'.$finalfile, $tarfilename, $basedir, $compress_type);
 				else	//exec and lazy both use the exec method
