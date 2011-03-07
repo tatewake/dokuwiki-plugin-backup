@@ -103,7 +103,7 @@ var $backup = '';
 		$result = false;
 		$i = 0;	//mark for first file
 		$rval = 0;
-        dbg("runExecBackup(".print_r($files,true).", '$tarfilename', '$basename', '$basedir')");
+        // dbg("runExecBackup(".print_r($files,true).", '$tarfilename', '$basename', '$basedir')");
 		
         // Put all to-be-tarred filenames into a manifest.
         $manifile = $tarfilename.'.manifest.txt';
@@ -114,7 +114,7 @@ var $backup = '';
         $tarfilename = escapeshellarg($tarfilename);
         $basedir = escapeshellarg($basedir);
         $manifile = escapeshellarg($manifile);
-        dbg("tar -cf $tarfilename -C $basedir --files-from $manifile");
+        //dbg("tar -cf $tarfilename -C $basedir --files-from $manifile");
         if (!bt_exec("tar -cf $tarfilename -C $basedir --files-from $manifile"))
             return ''; //tar failed (possibly out of memory)
 
@@ -194,6 +194,8 @@ var $backup = '';
 
 				//Print outgoing message...
 				print $this->plugin_locale_xhtml('outro');
+                
+                ob_flush(); flush();
 
 				//Generate file names
 				$tarfilename = 'dw-backup-'.date('Ymd-His').".tar";
@@ -243,19 +245,17 @@ var $backup = '';
                     }    
                 }
                 $this->filterdirs = array_combine($filterpaths,array_map('strlen',$filterpaths));
-                dbg("Filterlist: ".print_r($this->filterdirs,true));
+                // dbg("Filterlist: ".print_r($this->filterdirs,true));
                 // then filter away.
                 $files = array_filter($files,array($this,'filterFile'));
                 
-                dbg("Postfiler: ".print_r($files,true));
-                
-                dbg("Commonprefix: "._commonPrefix($files)." -> ".substr($files[0],0,_commonPrefix($files)));
+                // dbg("Postfiler: ".print_r($files,true));
                 // Compute the common directory -- this will be subtracted from the filenames.
                 $basedir = dirname(substr($files[0],0,_commonPrefix($files)).'aaaaa');
                 if($basedir[strlen($basedir)-1] != DIRECTORY_SEPARATOR)
                     $basedir .= DIRECTORY_SEPARATOR;
 
-                dbg("\$basedir = $basedir");
+                // dbg("\$basedir = $basedir");
 				//Run the backup method
 				if (strcmp($this->backup['type'], 'PEAR') == 0)
 					$finalfile = $this->runPearBackup($files, $tarpath.'/'.$finalfile, $tarfilename, $basedir, $compress_type);
@@ -276,7 +276,6 @@ var $backup = '';
 					print $this->plugin_render('{{:'.$this->getConf('backupnamespace').':'.$finalfile.'}}');
 				}
 				ob_flush(); flush();
-                dbg(print_r($this->conf,true));
 			}
 		}
         
@@ -295,7 +294,7 @@ var $backup = '';
     function filterFile($fname) {
         foreach($this->filterdirs as $dir=>$len)
             if(!strncmp($dir,$fname,$len)) {
-                dbg("filterFile($fname) -- FILTER");
+                // dbg("filterFile($fname) -- FILTERED OUT");
                 return false; // $fname has $dir as prefix.
             }
         return true; // $fname does not match any prefix.
