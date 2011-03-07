@@ -74,18 +74,15 @@ var $backup = '';
 	 */
 	function handle()
 	{
-		$this->state = 0;
-	
-		if (!isset($_REQUEST['cmd'])) return;   // first time - nothing to do
-
-		if (!is_array($_REQUEST['cmd'])) return;
-
 		$this->backup = $_REQUEST['backup'];
-
 		if (is_array($this->backup))
 		{
 			$this->state = 1;
-		}
+		} elseif (is_array($_POST['delete'])) {
+			$this->state = 2;
+		} else {
+            $this->state = 0;
+        }
 	}
 
 	function runPearBackup($files, $finalfile, $tarfilename, $basedir, $compress_type)
@@ -145,7 +142,20 @@ var $backup = '';
 		}
 		else
 		{
-			if ($this->state == 0)
+            if($this->state == 3) {
+                $killsuccess = true;
+                $extantbackups = glob($tarpath.'/dw-backup-*');
+                foreach($extantbackups as $kill)
+                    if(!unlink($kill)) {
+                        $killsuccess = false;
+                        ptln('<div class="error">'.'Could not delete: '.htmlspecialchars($kill).'</div>');
+                    }
+                if($killsuccess) {
+                    ptln('<div class="success">'.'All backups '.htmlescapechars($tarpath.'/dw-backup-*').' deleted.'.'</div>');
+                }
+                print $this->plugin_locale_xhtml('intro');
+            }
+			if ($this->state == 0 || $this->state == 3)
 			{
 				//Print Backup introduction page
 				print $this->plugin_locale_xhtml('intro');
@@ -153,7 +163,6 @@ var $backup = '';
 				ptln('<form action="'.wl($ID).'" method="post">');
 				ptln('	<input type="hidden" name="do"   value="admin" />');
 				ptln('	<input type="hidden" name="page" value="'.$this->getPluginName().'" />');
-				ptln('	<input type="hidden" name="cmd[backup]" value="true" />');
 				print '<center>';
 	
 //				ptln('bt_settings[type] = '.$bt_settings['type'].'<br/>');
@@ -178,7 +187,7 @@ var $backup = '';
 				print '<p><input type="submit" value="'.$this->getLang('bt_create_backup').'"></p></center>';
 				print '</form>';
 			}
-			else
+			elseif ($this->state == 1)
 			{
 				//Save settings...
 				$bt_settings['type']					= strcmp($this->backup['type'], 'PEAR') == 0 ? 'PEAR' :
@@ -245,9 +254,8 @@ var $backup = '';
                     }    
                 }
                 $this->filterdirs = array_combine($filterpaths,array_map('strlen',$filterpaths));
-                // dbg("Filterlist: ".print_r($this->filterdirs,true));
-                // then filter away.
-                $files = array_filter($files,array($this,'filterFile'));
+                // then filter away and sort.
+                $files = sort(array_filter($files,array($this,'filterFile')),SORT_LOCALE_STRING);
                 
                 // dbg("Postfiler: ".print_r($files,true));
                 // Compute the common directory -- this will be subtracted from the filenames.
@@ -281,10 +289,16 @@ var $backup = '';
         
         $extantbackups = glob($tarpath.'/dw-backup-*');
         if(count($extantbackups) > 0) {
-            print '<pre>';
+            print $this->plugin_locale_xhtml('oldbackups');
+            ptln('<form action="'.wl($ID).'" method="post">');
+            ptln('	<input type="hidden" name="do"   value="admin" />');
+            ptln('	<input type="hidden" name="page" value="'.$this->getPluginName().'" />');
+            ptln('<pre>');
+            ptln('<div style="float:left;"><input type="submit" value="delete[all]"/></div>');
             foreach ($extantbackups as $fname)
-                print $fname."\n";
-            print '</pre>';
+                print htmlescapechars($fname)."\n";
+            ptln('</pre>');
+            ptln('</form>');
         }
         
 		print $this->plugin_locale_xhtml('donate');
