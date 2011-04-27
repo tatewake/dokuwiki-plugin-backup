@@ -267,7 +267,7 @@ var $backup = '';
 					$basedir .= DIRECTORY_SEPARATOR;
 				
 				//Run the backup method
-				$this->_mkpath($tarpath);
+				$this->_mkpath($tarpath,$conf['dmode']);
 				if (strcmp($this->backup['type'], 'PEAR') == 0)
 					$finalfile = $this->runPearBackup($files, $tarpath.'/'.$finalfile, $tarfilename, $basedir, $compress_type);
 				else	//exec and lazy both use the exec method
@@ -336,10 +336,10 @@ var $backup = '';
 		return substr($fname,$this->_commonlength);
 	}
 
-	function _mkpath($path)
+	function _mkpath($path,$dmask=0777)
 	{
-		if(@mkdir($path) or file_exists($path)) return true;
-		return (mkpath(dirname($path)) and mkdir($path));
+		if(@mkdir($path,$dmask) or file_exists($path)) return true;
+		return ($this->_mkpath(dirname($path),$dmask) and mkdir($path,$dmask));
 	}
 }
 
