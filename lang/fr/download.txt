@@ -1,7 +1,6 @@
 **Backup achevé !**
 
 **Notes**:
-  * Ce fichier est situé à la racine de votre répertoire "media". Vous devriez le supprimer après l'avoir téléchargé.
-    * Les anciens backups ne sont **jamais supprimés** ; il vous appartient de les supprimer si vous le désirez.
+  * Les anciens backups ne sont **jamais supprimés** ; il vous appartient de les supprimer si vous le désirez.
   * Le fichier de backup est intitulé //dw-backup-AnMoisJour-HeureMinuteSeconde.tar.bz2//, et l'heure est en format 24h.
     * Le fichier est formaté de tel sorte que les backup soient **toujours** triés correctement. Je vous suggère de ne pas le modifier.

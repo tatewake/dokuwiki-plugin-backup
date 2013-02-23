@@ -50,7 +50,7 @@ function bt_save()
 		bt_write($fp, 'plugins', $bt_settings['plugins']);
 		fclose($fp);
 
-		ptln('<div class="success">'.'Backup Tool pref saved successfully.'.'</div>');
+//		ptln('<div class="success">'.'Backup Tool pref saved successfully.'.'</div>');
 	}
 	else
 	{
