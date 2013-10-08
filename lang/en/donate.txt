@@ -1,1 +1,1 @@
-//[[http://tatewake.com/wiki/donations|Donate]].//
+//[[https://www.paypal.com/xclick/business=tjgrant%40tatewake.com&item_name=BackupTool%20for%20DokuWiki%20Donation&no_shipping=1&no_note=1&tax=0&currency_code=USD&lc=US|Donate]].//
