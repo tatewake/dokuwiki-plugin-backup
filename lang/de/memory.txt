@@ -1,0 +1,13 @@
+**Ein Fehler ist aufgetreten und die Sicherungskopie konnte nicht erstellt werden**
+
+Höchstwahrscheinlich eine der folgenden Probleme ist aufgetreten:
+  * Plugin hat keinen schreibenden Zugriff auf das media Verzeichnis ...
+  * Das Programm hat nicht genug Arbeitsspeicher erhalten (RAM) ...
+  * Sie haben nicht genügend Festplattenspeicher zur Verfügung ...
+  * Ein Hardwarefehler ist aufgetreten (z.B. ein Festplattenfehler)
+
+Andere Möglichkeiten sind -- Beschränkung der Ausführungszeit, nicht standard tar, gzip, bzip2 oder irgendwas ganz anderes, aber solch ein Auftreten ist sehr unwahrscheinlich.
+
+Die Beste Lösung ist, die oben aufgeführten Punkte zu überprüfen, zu beheben und dann noch mal zu versuchen.
+
+Vergessen Sie nicht, Ihre Festplatten und Arbeitsspeicher Zuweisungen von Ihrem Hoster zu überprüfen, wenn diese bestehen. Schauen Sie auch nach sehr großen Dateien in Ihrem dokuwiki, als mögliche Ursachen.

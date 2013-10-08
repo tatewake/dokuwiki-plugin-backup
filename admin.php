@@ -137,7 +137,7 @@ var $backup = '';
 		
 		if (!($bt_pearWorks || $bt_execWorks))	//if neither works, display the error message.
 		{
-			print $this->plugin_locale_xhtml('error');
+			print $this->locale_xhtml('error');
 		}
 		else
 		{
@@ -158,7 +158,7 @@ var $backup = '';
 			if ($this->state == 0 || $this->state == 2)
 			{
 				//Print Backup introduction page
-				print $this->plugin_locale_xhtml('intro');
+				print $this->locale_xhtml('intro');
 	
 				ptln('<form action="'.wl($ID).'" method="post">');
 				ptln('	<input type="hidden" name="do"   value="admin" />');
@@ -202,7 +202,7 @@ var $backup = '';
 				bt_save();
 				
 				//Print outgoing message...
-				print $this->plugin_locale_xhtml('outro');
+				print $this->locale_xhtml('outro');
 				
 				ob_flush(); flush();
 
@@ -279,14 +279,14 @@ var $backup = '';
 
 				if ($finalfile == '')
 				{
-					print $this->plugin_locale_xhtml('memory');
+					print $this->locale_xhtml('memory');
 				}
 				else
 				{
-					print $this->plugin_locale_xhtml('download');
+					print $this->locale_xhtml('download');
 					print '<div class="success">';
 					$filesize = round(filesize($tarpath.'/'.$finalfile)/1024.0);
-					print $this->plugin_render('Download: {{:'.$this->getConf('backupnamespace').':'.$finalfile.'}} ('.$filesize.' kiB)');
+					print $this->render('Download: {{:'.$this->getConf('backupnamespace').':'.$finalfile.'}} ('.$filesize.' kiB)');
 					print '</div>';
 					
 					if(count($this->filterresult)>0) {
@@ -307,16 +307,16 @@ var $backup = '';
 				$filesize = round(filesize($fname)/1024.0);
 				$buildrender .= '{{:'.$this->getConf('backupnamespace').':'.basename($fname).'}} ('.$filesize." kiB)\\\\\n";
 			}
-			print $this->plugin_locale_xhtml('oldbackups');
+			print $this->locale_xhtml('oldbackups');
 			ptln('<form action="'.wl($ID).'" method="post">');
 			ptln('	<input type="hidden" name="do"   value="admin" />');
 			ptln('	<input type="hidden" name="page" value="'.$this->getPluginName().'" />');
 			ptln('<input type="submit" class="button" name="delete[all]" value="Delete"/>');
-			print $this->plugin_render($buildrender);
+			print $this->render($buildrender);
 			ptln('</form>');
 		}
 		
-		print $this->plugin_locale_xhtml('donate');
+		print $this->locale_xhtml('donate');
 	}
 	
 	// returns true if $fname is not in the filter list
