@@ -1,9 +1,10 @@
 <?php
 /**
- * english language file
+ * German language file
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     Terence J. Grant<tjgrant@tatewake.com>
+ * @translator Martin "Chaoticer" Betz<chaoticer@live.de>
  */
  
 // settings must be present and set appropriately for the language
@@ -14,21 +15,22 @@ $lang['direction']  = 'ltr';
 // if set here, the plugin doesn't need to override the getMenuText() method
 $lang['menu'] = 'Backup Tool';
 
-$lang['bt_item_type'] = 'Item type';
-$lang['bt_add_to_archive'] = 'Add to archive?';
-$lang['bt_pages'] = 'Pages';
-$lang['bt_revisions'] = 'Old Revisions of Pages';
-$lang['bt_subscriptions'] = 'Meta data (Subscriptions)';
-$lang['bt_media'] = 'Media files';
+$lang['bt_item_type'] = 'Inhaltstyp';
+$lang['bt_add_to_archive'] = 'Zum Archiv hinzufügen?';
+$lang['bt_pages'] = 'Seiten';
+$lang['bt_revisions'] = 'Ältere Versionen der Seiten';
+$lang['bt_subscriptions'] = 'Meta Daten (Abonnements)';
+$lang['bt_media'] = 'Media Dateien';
 $lang['bt_config'] = 'Wiki/<acronym title="Access Control List">ACL</acronym>/User Config';
 $lang['bt_templates'] = 'Templates';
 $lang['bt_plugins'] = 'Plugins';
-$lang['bt_create_backup'] = 'Create Backup';
-$lang['bt_archiving'] = 'Archiving';
-$lang['bt_compressing_archive'] = 'Compressing archive';
+$lang['bt_create_backup'] = 'Sicherung starten';
+$lang['bt_archiving'] = 'Archivieren';
+$lang['bt_compressing_archive'] = 'Archiv komprimieren';
 
-$lang['backupnamespace'] = 'Media namespace (e.g. <code>wiki:backup</code>) in which to store backup files.';
-$lang['filterdirs'] = 'List of blacklisted directories, separated by newlines. These directories will not be
-included in your backups. If the following checkbox is selected, then the backup namespace will be implicitly included in this list.';
-$lang['filterbackups'] = 'Add backup namespace to blacklisted directory list? It is <em>highly</em> recommended
-to keep this option checked, so your new backups don\'t include old backup files.';
+$lang['backupnamespace'] = 'Media Namensraum (z.B. <code>wiki:backup</code>) in dem die Sicherungskopien gespeichert werden.';
+$lang['filterdirs'] = 'Liste von Verzeichnissen auf der Blacklist, getrennt von Zeilenumbrüchen. Diese Verzeichnisse
+werden nicht in Ihre Backups integriert. Wenn Sie die folgende Checkbox aktivieren, so wird der Backup Namensraum
+implizit zu dieser Liste hinzugefügt.';
+$lang['filterbackups'] = 'Backup Namensraum zur Verzeichnisblacklist hinzufügen? Es wird <em>stark</em> empfohlen,
+diese Option aktiv zu lassen, damit neue Sicherungen keine alten Sicherungskopien enthalten.';
