@@ -16,11 +16,9 @@ steht, wird die tar-Datei unkomprimiert erzeugt.
   * Die erstellte Datei erhält einen Namen nach dem Format //dw-backup-JahrMonatTag-StundeMinuteSekunde.tar.bz2//, mit der Zeit im 24-Stunden-Format.
     * Die Datei ist in dieser Form formatiert, damit Sicherungskopien in chronologischer Folge sortiert werden.
   * **Wenn Sie sicherheitsrelevante Daten** (z.B. private Seiten oder Konfigurationsdateien in denen Passwörter enthalten sind) abspeichern, ist es empfehlenswert, den backup-Namensraum so zu konfigurieren, dass nur Administratoren ihn einsehen können oder Sie löschen die Sicherungskopien sofort, nachdem sie heruntergeladen wurden.
-  * Sie können spezifische Verzeichnisse von der Sicherungskopie
-  * ausschließen, z.B. alte Sicherungskopien oder Cacheverzeichnisse vom
-  * [[doku>plugin:latex|LateX plugin]]. Schauen Sie dazu in die Konfigurationsdatei für dieses Plugin.
+  * Sie können spezifische Verzeichnisse von der Sicherungskopie ausschließen, z.B. alte Sicherungskopien oder Cacheverzeichnisse vom [[doku>plugin:latex|LateX plugin]]. Schauen Sie dazu in die Konfigurationsdatei für dieses Plugin.
     * Die Sicherungsmethode mit "GNU Tar (fast;unfiltered)" ignoriert normalerweise diese Filter.
 
 
-Bitte wählen Sie aus den folgenden Punkte, was Sie sichern wollen ...
+Bitte wählen Sie aus den folgenden Punkten, was Sie sichern wollen ...
 
