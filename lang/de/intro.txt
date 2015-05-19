@@ -20,5 +20,5 @@ steht, wird die tar-Datei unkomprimiert erzeugt.
     * Die Sicherungsmethode mit "GNU Tar (fast;unfiltered)" ignoriert normalerweise diese Filter.
 
 
-Bitte wählen Sie aus den folgenden Punkte, was Sie sichern wollen ...
+Bitte wählen Sie aus den folgenden Punkten, was Sie sichern wollen ...
 
