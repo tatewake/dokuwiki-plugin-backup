@@ -4,6 +4,7 @@
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     Guillaume Turri <guillaume.turri@gmail.com>
+ * @author     Olivier Humbert <trebmuh@tuxfamily.fr>
  */
  
 // settings must be present and set appropriately for the language
@@ -17,9 +18,9 @@ $lang['menu'] = 'Outil de sauvegarde';
 $lang['bt_item_type'] = 'Type de données';
 $lang['bt_add_to_archive'] = 'Ajouter à l\'archive ?';
 $lang['bt_pages'] = 'Pages';
-$lang['bt_revisions'] = 'Anciennes Revisions des Pages';
-$lang['bt_subscriptions'] = 'Meta données (Soumissions)';
-$lang['bt_media'] = 'Fichiers Media';
+$lang['bt_revisions'] = 'Anciennes Révisions des Pages';
+$lang['bt_subscriptions'] = 'Méta données (Soumissions)';
+$lang['bt_media'] = 'Fichiers Média';
 $lang['bt_config'] = 'Wiki/<acronym title="Access Control List">ACL</acronym>/Configuration';
 $lang['bt_templates'] = 'Templates';
 $lang['bt_plugins'] = 'Plugins';
