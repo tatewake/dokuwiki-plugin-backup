@@ -4,7 +4,7 @@
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     Guillaume Turri <guillaume.turri@gmail.com>
- * @author     Olivier Humbert <trebmuh@tuxfamily.fr>
+ * @author     Olivier Humbert <trebmuh@tuxfamily.org>
  */
  
 // settings must be present and set appropriately for the language
