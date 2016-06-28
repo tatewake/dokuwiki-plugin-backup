@@ -286,7 +286,7 @@ var $backup = '';
 					print $this->locale_xhtml('download');
 					print '<div class="success">';
 					$filesize = round(filesize($tarpath.'/'.$finalfile)/1024.0);
-					print $this->render('Download: {{:'.$this->getConf('backupnamespace').':'.$finalfile.'}} ('.$filesize.' kiB)');
+					print $this->render_text('Download: {{:'.$this->getConf('backupnamespace').':'.$finalfile.'}} ('.$filesize.' kiB)');
 					print '</div>';
 					
 					if(count($this->filterresult)>0) {
@@ -312,7 +312,7 @@ var $backup = '';
 			ptln('	<input type="hidden" name="do"   value="admin" />');
 			ptln('	<input type="hidden" name="page" value="'.$this->getPluginName().'" />');
 			ptln('<input type="submit" class="button" name="delete[all]" value="Delete"/>');
-			print $this->render($buildrender);
+			print $this->render_text($buildrender);
 			ptln('</form>');
 		}
 		
