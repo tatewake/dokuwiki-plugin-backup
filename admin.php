@@ -59,15 +59,6 @@ var $backup = '';
 		return 999;
 	}
 	
-	/**
-	 *  return a menu prompt for the admin menu
-	 *  NOT REQUIRED - its better to place $lang['menu'] string in localised string file
-	 *  only use this function when you need to vary the string returned
-	 */
-	function getMenuText()
-	{
-		return 'BackupTool for DokuWiki';
-	}
 
 	/**
 	 * handle user request
