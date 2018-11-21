@@ -32,15 +32,7 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
         global $INPUT;
 
         if ($INPUT->post->bool('backup')) {
-            echo $this->locale_xhtml('outro');
-            tpl_flush();
-            try {
-                $this->createBackup($this->loadPreferences(), 'msg');
-
-                // FIXME show success and download link
-            } catch (\splitbrain\PHPArchive\ArchiveIOException $e) {
-                msg('Backup failed. ' . $e->getMessage(), -1);
-            }
+            $this->runBackup();
         } else {
             echo $this->locale_xhtml('intro');
             echo $this->getForm();
@@ -49,6 +41,46 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
         }
 
         echo $this->locale_xhtml('donate');
+    }
+
+    /**
+     * Runs the backup process with XHTML output
+     */
+    protected function runBackup()
+    {
+        echo $this->locale_xhtml('outro');
+        tpl_flush();
+        $id = $this->createBackupID();
+        $fn = mediaFN($id);
+        try {
+            echo '<div class="log">';
+            $this->createBackup($fn, $this->loadPreferences(), [$this, 'logXHTML']);
+            echo '</div>';
+            msg(sprintf($this->getLang('success'), ml($id), $id), 1);
+        } catch (\splitbrain\PHPArchive\ArchiveIOException $e) {
+            echo '</div>'; // close the log wrapping
+            msg('Backup failed. ' . $e->getMessage(), -1);
+            @unlink($fn);
+        }
+    }
+
+    /**
+     * The logger to output the progress of the backup
+     *
+     * We want the filenames a little bit less prominent, so we handle those differently
+     *
+     * @param string $msg
+     * @param int $level
+     */
+    protected function logXHTML($msg, $level = 0)
+    {
+        if ($level === -1 || $level === 1) {
+            msg(hsc($msg), $level);
+        } else {
+            echo '<div>' . hsc($msg) . '</div>';
+        }
+        ob_flush();
+        flush();
     }
 
     /**
@@ -124,7 +156,7 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
      *
      * @return string
      */
-    protected function createBackupName()
+    protected function createBackupID()
     {
         $tarfilename = 'dw-backup-' . date('Ymd-His') . '.tar';
         if (extension_loaded('bz2')) {
@@ -132,21 +164,20 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
         } elseif (extension_loaded('gz')) {
             $tarfilename .= '.gz';
         }
-        return mediaFN($this->getConf('backupnamespace') . ':' . $tarfilename);
+        return cleanID($this->getConf('backupnamespace') . ':' . $tarfilename);
     }
 
     /**
      * Create the backup
      *
+     * @param string $fn Filename of the backup archive
      * @param array $prefs
      * @param Callable $logger A method compatible to DokuWiki's msg()
      * @throws \splitbrain\PHPArchive\ArchiveIOException
      */
-    protected function createBackup($prefs, $logger)
+    protected function createBackup($fn, $prefs, $logger)
     {
         @set_time_limit(0);
-        $fn = $this->createBackupName();
-        $logger("Creating $fn", 0);
         io_mkdir_p(dirname($fn));
         $tar = new Tar();
         $tar->create($fn);
