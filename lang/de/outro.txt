@@ -1,4 +1,0 @@
-====== Backup Tool ======
-
-Eine Sicherungskopie wird erstellt, bitte warten ...
-

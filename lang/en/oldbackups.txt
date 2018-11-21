@@ -1,4 +1,0 @@
-====== Existing backups ======
-
-Below is a list of old and new backups stored in the backup namespace.
-Press the delete button to remove them all.

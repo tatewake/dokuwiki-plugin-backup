@@ -1,5 +1,0 @@
-====== Bereits bestehende Sicherungskopien ======
-
-Unten finden Sie eine Liste von bereits bestehenden Sicherungskopien,
-die im Backup-Namensraum vorliegen.
-Drücken Sie auf den Delete-Knopf, um sie zu löschen.

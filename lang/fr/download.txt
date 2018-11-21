@@ -1,6 +1,0 @@
-**Sauvegarde achevée !**
-
-**Notes**:
-  * Les anciennes sauvegardes ne sont **jamais supprimées** ; il vous appartient de les supprimer si vous le désirez.
-  * Le fichier de sauvegarde est intitulé //dw-backup-AnnéeMoisJour-HeureMinuteSeconde.tar.bz2//, et l'heure est en format 24h.
-    * Le fichier est formaté de telle sorte que les sauvegardes soient **toujours** triées correctement. Je vous suggère de ne pas le modifier.
