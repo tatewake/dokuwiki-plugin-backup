@@ -28,38 +28,25 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
     public function html()
     {
         global $conf;
+        global $INPUT;
 
-        // Where to put these files?
-        $tarpath = dirname(mediaFN($this->getConf('backupnamespace') . ':foo'));
+        if ($INPUT->post->bool('backup')) {
+            echo $this->locale_xhtml('outro');
+            tpl_flush();
+            try {
+                $this->createBackup($this->loadPreferences(), 'msg');
+            } catch (\splitbrain\PHPArchive\ArchiveIOException $e) {
+                msg('Backup failed. ' . $e->getMessage(), -1);
+            }
+        } else {
+            echo $this->locale_xhtml('intro');
+            echo $this->getForm();
+        }
 
-        echo $this->locale_xhtml('intro');
-        echo $this->getForm();
 
         {
             if ($this->state == 0 || $this->state == 2) {
             } elseif ($this->state == 1) {
-                //Save settings...
-                $bt_settings['type'] = strcmp($this->backup['type'], 'PEAR') == 0 ? 'PEAR' :
-                    strcmp($this->backup['type'], 'exec') == 0 ? 'exec' : 'lazy';
-                $bt_settings['pages'] = strcmp($this->backup['pages'], 'on') == 0 ? 'checked' : '';
-                $bt_settings['revisions'] = strcmp($this->backup['revisions'], 'on') == 0 ? 'checked' : '';
-                $bt_settings['subscriptions'] = strcmp($this->backup['subscriptions'], 'on') == 0 ? 'checked' : '';
-                $bt_settings['media'] = strcmp($this->backup['media'], 'on') == 0 ? 'checked' : '';
-                $bt_settings['config'] = strcmp($this->backup['config'], 'on') == 0 ? 'checked' : '';
-                $bt_settings['templates'] = strcmp($this->backup['templates'], 'on') == 0 ? 'checked' : '';
-                $bt_settings['plugins'] = strcmp($this->backup['plugins'], 'on') == 0 ? 'checked' : '';
-                bt_save();
-
-                //Print outgoing message...
-                print $this->locale_xhtml('outro');
-
-                ob_flush();
-                flush();
-
-                //Generate file names
-                $tarfilename = 'dw-backup-' . date('Ymd-His') . ".tar";
-                $compress_type = (extension_loaded('bz2') ? 'bz2' : (extension_loaded('zlib') ? 'gz' : ''));
-                $finalfile = $tarfilename . '.' . $compress_type;
 
                 //Generate array of files
                 $files = (array)NULL;
@@ -166,6 +153,52 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
 
         print $this->locale_xhtml('donate');
 
+    }
+
+    /**
+     * Generate a new unique backup name
+     *
+     * @return string
+     */
+    protected function createBackupName()
+    {
+        $tarfilename = 'dw-backup-' . date('Ymd-His') . '.tar';
+        if (extension_loaded('bz2')) {
+            $tarfilename .= '.bz2';
+        } elseif (extension_loaded('gz')) {
+            $tarfilename .= '.gz';
+        }
+        return mediaFN($this->getConf('backupnamespace') . ':' . $tarfilename);
+    }
+
+    /**
+     * Create the backup
+     *
+     * @param array $prefs
+     * @param Callable $logger A method compatible to DokuWiki's msg()
+     * @throws \splitbrain\PHPArchive\ArchiveIOException
+     */
+    protected function createBackup($prefs, $logger)
+    {
+        @set_time_limit(0);
+        $fn = $this->createBackupName();
+        $logger("Creating $fn", 0);
+        io_mkdir_p(dirname($fn));
+        $tar = new \splitbrain\PHPArchive\Tar();
+        $tar->create($fn);
+
+        foreach ($prefs as $pref => $val) {
+            if (!$val) continue;
+
+            $cmd = [$this, 'backup' . ucfirst($pref)];
+            if (is_callable($cmd)) {
+                $cmd($tar, $logger);
+            } else {
+                $logger('Can\'t call ' . $cmd[1], -1);
+            }
+        }
+
+        $tar->close();
     }
 
     /**
