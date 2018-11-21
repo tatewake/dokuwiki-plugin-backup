@@ -29,7 +29,6 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
      */
     public function html()
     {
-        global $conf;
         global $INPUT;
 
         if ($INPUT->post->bool('backup')) {
@@ -50,6 +49,74 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
         }
 
         echo $this->locale_xhtml('donate');
+    }
+
+    /**
+     * Create the preference form
+     *
+     * @return string
+     */
+    protected function getForm()
+    {
+        global $ID;
+        $form = new \dokuwiki\Form\Form([
+            'method' => 'POST',
+            'action' => wl($ID, ['do' => 'admin', 'page' => 'backup'], false, '&')
+        ]);
+        $form->addFieldsetOpen($this->getLang('components'));
+
+        $prefs = $this->loadPreferences();
+        foreach ($prefs as $pref => $val) {
+            $label = $this->getLang('bt_' . $pref);
+            if (!$label) continue; // unknown pref, skip it
+
+            $form->setHiddenField("pref[$pref]", '0');
+            $cb = $form->addCheckbox("pref[$pref]", $label)->useInput(false)->addClass('block');
+            if ($val) $cb->attr('checked', 'checked');
+        }
+
+        $form->addButton('backup', $this->getLang('bt_create_backup'));
+        return $form->toHTML();
+    }
+
+    /**
+     * Get the currently saved preferences
+     *
+     * @return array
+     */
+    protected function loadPreferences()
+    {
+        // FIXME set sensible defaults
+        // FIXME these selections may not be the most sensible
+        $prefs = [
+            'config' => 1,
+            'pages' => 1,
+            'revisions' => 1,
+            'meta' => 1,
+            'media' => 1,
+            'mediarevs' => 0,
+            'mediameta' => 1,
+            'templates' => 0,
+            'plugins' => 0
+        ];
+        // load and merge saved preferences
+        if (file_exists($this->prefFile)) {
+            $more = json_decode(io_readFile($this->prefFile, false), true);
+            $prefs = array_merge($prefs, $more);
+        }
+
+        return $prefs;
+    }
+
+    /**
+     * Store the backup preferences
+     *
+     * @param array $prefs
+     */
+    protected function savePreferences($prefs)
+    {
+        $prefs = array_map('intval', $prefs);
+        io_saveFile($this->prefFile, json_encode($prefs, JSON_PRETTY_PRINT));
     }
 
     /**
@@ -144,75 +211,6 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
         }
         return ltrim($dir, '/');
     }
-
-    /**
-     * Create the preference form
-     *
-     * @return string
-     */
-    protected function getForm()
-    {
-        global $ID;
-        $form = new \dokuwiki\Form\Form([
-            'method' => 'POST',
-            'action' => wl($ID, ['do' => 'admin', 'page' => 'backup'], false, '&')
-        ]);
-        $form->addFieldsetOpen($this->getLang('components'));
-
-        $prefs = $this->loadPreferences();
-        foreach ($prefs as $pref => $val) {
-            $label = $this->getLang('bt_' . $pref);
-            if(!$label) continue; // unknown pref, skip it
-
-            $form->setHiddenField("pref[$pref]", '0');
-            $cb = $form->addCheckbox("pref[$pref]", $label)->useInput(false)->addClass('block');
-            if ($val) $cb->attr('checked', 'checked');
-        }
-
-        $form->addButton('backup', $this->getLang('bt_create_backup'));
-        return $form->toHTML();
-    }
-
-    /**
-     * Get the currently saved preferences
-     *
-     * @return array
-     */
-    protected function loadPreferences()
-    {
-        // FIXME set sensible defaults
-        // FIXME these selections may not be the most sensible
-        $prefs = [
-            'config' => 1,
-            'pages' => 1,
-            'revisions' => 1,
-            'meta' => 1,
-            'media' => 1,
-            'mediarevs' => 0,
-            'mediameta' => 1,
-            'templates' => 0,
-            'plugins' => 0
-        ];
-        // load and merge saved preferences
-        if (file_exists($this->prefFile)) {
-            $more = json_decode(io_readFile($this->prefFile, false), true);
-            $prefs = array_merge($prefs, $more);
-        }
-
-        return $prefs;
-    }
-
-    /**
-     * Store the backup preferences
-     *
-     * @param array $prefs
-     */
-    protected function savePreferences($prefs)
-    {
-        $prefs = array_map('intval', $prefs);
-        io_saveFile($this->prefFile, json_encode($prefs, JSON_PRETTY_PRINT));
-    }
-
 
     // region backup components
 
