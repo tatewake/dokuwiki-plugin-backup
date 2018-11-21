@@ -7,6 +7,8 @@ use splitbrain\PHPArchive\Tar;
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     Terence J. Grant<tjgrant@tatewake.com>
+ * @author     Andreas Wagner <andreas.wagner@em.uni-frankfurt.de>
+ * @author     Andreas Gohr <gohr@cosmocode.de>
  */
 class admin_plugin_backup extends DokuWiki_Admin_Plugin
 {
