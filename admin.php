@@ -161,8 +161,6 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
      */
     protected function loadPreferences()
     {
-        // FIXME set sensible defaults
-        // FIXME these selections may not be the most sensible
         $prefs = [
             'config' => 1,
             'pages' => 1,
