@@ -11,11 +11,15 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
     var $state = 0;
     var $backup = '';
 
-    /**
-     * handle user request
-     */
+    protected $prefFile = DOKU_CONF . 'backup.json';
+
+    /** @inheritdoc */
     public function handle()
     {
+        global $INPUT;
+        if ($INPUT->post->has('pref') && checkSecurityToken()) {
+            $this->savePreferences($INPUT->post->arr('pref'));
+        }
     }
 
     /**
@@ -164,7 +168,11 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
 
     }
 
-
+    /**
+     * Create the preference form
+     *
+     * @return string
+     */
     protected function getForm()
     {
         global $ID;
@@ -176,9 +184,12 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
 
         $prefs = $this->loadPreferences();
         foreach ($prefs as $pref => $val) {
-            $form->addCheckbox($pref, $this->getLang('bt_' . $pref))->val($val)->addClass('block');
+            $form->setHiddenField("pref[$pref]", '0');
+            $cb = $form->addCheckbox("pref[$pref]", $this->getLang('bt_' . $pref))->useInput(false)->addClass('block');
+            if ($val) $cb->attr('checked', 'checked');
         }
 
+        $form->addButton('backup', $this->getLang('bt_create_backup'));
         return $form->toHTML();
     }
 
@@ -200,9 +211,24 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
             'templates' => 1,
             'plugins' => 1
         ];
-        // FIXME load and merge last used preferences
+        // load and merge saved preferences
+        if (file_exists($this->prefFile)) {
+            $more = json_decode(io_readFile($this->prefFile, false), true);
+            $prefs = array_merge($prefs, $more);
+        }
 
         return $prefs;
+    }
+
+    /**
+     * Store the backup preferences
+     *
+     * @param array $prefs
+     */
+    protected function savePreferences($prefs)
+    {
+        $prefs = array_map('intval', $prefs);
+        io_saveFile($this->prefFile, json_encode($prefs, JSON_PRETTY_PRINT));
     }
 
 
