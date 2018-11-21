@@ -1,23 +1,10 @@
 <?php
+
 /**
  * Backup Tool for DokuWiki
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     Terence J. Grant<tjgrant@tatewake.com>
- */
-
-if (!defined('DOKU_INC')) define('DOKU_INC', realpath(dirname(__FILE__) . '/../../') . '/');
-if (!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN', DOKU_INC . 'lib/plugins/');
-if (!defined('DOKU_INCLUDE')) define('DOKU_INCLUDE', DOKU_INC . 'inc/');
-require_once(DOKU_PLUGIN . 'admin.php');
-
-include_once(DOKU_PLUGIN . 'backup/pref_code.php');
-
-@include_once("Archive/Tar.php");    //PEAR Archive/Tar
-
-/**
- * All DokuWiki plugins to extend the admin function
- * need to inherit from this class
  */
 class admin_plugin_backup extends DokuWiki_Admin_Plugin
 {
@@ -29,50 +16,6 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
      */
     public function handle()
     {
-        $this->backup = $_REQUEST['backup'];
-        if (is_array($this->backup)) {
-            $this->state = 1;
-        } elseif (is_array($_POST['delete'])) {
-            $this->state = 2;
-        } else {
-            $this->state = 0;
-        }
-    }
-
-    protected function runPearBackup($files, $finalfile, $tarfilename, $basedir, $compress_type)
-    {
-        //Create archive object, add files, compile and compress.
-        $tar = new Archive_Tar($finalfile, $compress_type);
-        $result = $tar->createModify($files, '', $basedir);
-        $tar->_Archive_Tar();
-
-        return ($result) ? $tarfilename . '.' . $compress_type : '';    //return filename on success...
-    }
-
-    protected function runExecBackup($files, $tarfilename, $basename, $basedir)
-    {
-        $result = false;
-        $i = 0;    //mark for first file
-        $rval = 0;
-        //dbg("runExecBackup(".print_r($files,true).", '$tarfilename', '$basename', '$basedir')");
-
-        // Put all to-be-tarred filenames into a manifest.
-        $manifile = $tarfilename . '.manifest.txt';
-        $manihandle = fopen($manifile, 'w');
-        foreach ($files as $item) fwrite($manihandle, $item . "\n");
-        fclose($manihandle);
-
-        $tarfilename = escapeshellarg($tarfilename);
-        $res = bt_exec("tar -cf $tarfilename -C " . escapeshellarg($basedir) . " --files-from " . escapeshellarg($manifile));
-        unlink($manifile);
-        if (!$res)
-            return ''; //tar failed (possibly out of memory)
-
-        if (bt_exec('bzip2 --version'))
-            if (bt_exec('bzip2 -9 ' . $tarfilename)) return $basename . '.bz2';    //Bzip2 compression available.
-        if (bt_exec('gzip --version'))
-            if (bt_exec('gzip -9 ' . $tarfilename)) return $basename . '.gz';    //Gzip compression available.
-        return $basename;                    //No compression available, but tar succeeded
     }
 
     /**
@@ -81,63 +24,15 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
     public function html()
     {
         global $conf;
-        global $bt_loaded, $bt_settings;
-
-        $bt_pearWorks = (class_exists("Archive_Tar")) ? true : false;
-        $bt_execWorks = bt_exec("tar --version");
 
         // Where to put these files?
-        $tarpath = $conf['mediadir'] . '/' . strtr($this->getConf('backupnamespace'), ':', '/');
+        $tarpath = dirname(mediaFN($this->getConf('backupnamespace') . ':foo'));
 
-        if (!($bt_pearWorks || $bt_execWorks))    //if neither works, display the error message.
+        echo $this->locale_xhtml('intro');
+        echo $this->getForm();
+
         {
-            print $this->locale_xhtml('error');
-        } else {
-            //dbg(print_r($_REQUEST,true));
-            if ($this->state == 2) {
-                $killsuccess = true;
-                ob_flush();
-                flush();
-                $extantbackups = glob($tarpath . '/dw-backup-*');
-                foreach ($extantbackups as $kill)
-                    if (unlink($kill)) {
-                        ptln('<div class="info">' . 'Deleted file: ' . htmlspecialchars($kill) . '</div>');
-                    } else {
-                        $killsuccess = false;
-                        ptln('<div class="error">' . 'Could not delete: ' . htmlspecialchars($kill) . '</div>');
-                    }
-            }
-
             if ($this->state == 0 || $this->state == 2) {
-                //Print Backup introduction page
-                print $this->locale_xhtml('intro');
-
-                ptln('<form action="' . wl($ID) . '" method="post">');
-                ptln('	<input type="hidden" name="do"   value="admin" />');
-                ptln('	<input type="hidden" name="page" value="' . $this->getPluginName() . '" />');
-                print '<center>';
-
-//				ptln('bt_settings[type] = '.$bt_settings['type'].'<br/>');
-                ptln('	Backup method: <select name="backup[type]">');
-                if ($bt_pearWorks == true) ptln('		<option value="PEAR" ' . (strcmp($bt_settings['type'], 'PEAR') == 0 ? 'selected' : '') . '>PEAR Archive Library</option>');
-                if ($bt_execWorks == true) ptln('		<option value="exec" ' . (strcmp($bt_settings['type'], 'exec') == 0 ? 'selected' : '') . '>GNU Tar (filtered)</option>');
-                if ($bt_execWorks == true) ptln('		<option value="lazy" ' . (strcmp($bt_settings['type'], 'lazy') == 0 ? 'selected' : '') . '>GNU Tar (fast;unfiltered)</option>');
-                ptln('	</select><br/><br/>');
-
-                print '<table class="inline">';
-                print '	<tr><th> ' . $this->getLang('bt_item_type') . ' </th><th> ' . $this->getLang('bt_add_to_archive') . ' </th></tr>';
-                print '	<tr><td> ' . $this->getLang('bt_pages') . ' </td><td><input type="checkbox" name="backup[pages]" ' . $bt_settings['pages'] . '/></td></tr>';
-                print '	<tr><td> ' . $this->getLang('bt_revisions') . ' </td><td><input type="checkbox" name="backup[revisions]" ' . $bt_settings['revisions'] . '/></td></tr>';
-                print '	<tr><td> ' . $this->getLang('bt_subscriptions') . '</td><td><input type="checkbox" name="backup[subscriptions]" ' . $bt_settings['subscriptions'] . '/></td></tr>';
-                print '	<tr><td> ' . $this->getLang('bt_media') . ' </td><td><input type="checkbox" name="backup[media]" ' . $bt_settings['media'] . '/></td></tr>';
-                print '	<tr><td> ' . $this->getLang('bt_config') . ' </td><td><input type="checkbox" name="backup[config]" ' . $bt_settings['config'] . '/></td></tr>';
-                print '	<tr><td> ' . $this->getLang('bt_templates') . '</td><td><input type="checkbox" name="backup[templates]" ' . $bt_settings['templates'] . '/></td></tr>';
-                print '	<tr><td> ' . $this->getLang('bt_plugins') . '</td><td><input type="checkbox" name="backup[plugins]" ' . $bt_settings['plugins'] . '/></td></tr>';
-                print '</table>';
-
-                print '<br />';
-                print '<p><input type="submit" class="button" value="' . $this->getLang('bt_create_backup') . '"></p></center>';
-                print '</form>';
             } elseif ($this->state == 1) {
                 //Save settings...
                 $bt_settings['type'] = strcmp($this->backup['type'], 'PEAR') == 0 ? 'PEAR' :
@@ -246,25 +141,105 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
                 ob_flush();
                 flush();
             }
+
+            $extantbackups = glob($tarpath . '/dw-backup-*');
+            if (count($extantbackups) > 0) {
+                $buildrender = '';
+                foreach ($extantbackups as $fname) {
+                    $filesize = round(filesize($fname) / 1024.0);
+                    $buildrender .= '{{:' . $this->getConf('backupnamespace') . ':' . basename($fname) . '}} (' . $filesize . " kiB)\\\\\n";
+                }
+                print $this->locale_xhtml('oldbackups');
+                ptln('<form action="' . wl($ID) . '" method="post">');
+                ptln('	<input type="hidden" name="do"   value="admin" />');
+                ptln('	<input type="hidden" name="page" value="' . $this->getPluginName() . '" />');
+                ptln('<input type="submit" class="button" name="delete[all]" value="Delete"/>');
+                print $this->render_text($buildrender);
+                ptln('</form>');
+            }
         }
 
-        $extantbackups = glob($tarpath . '/dw-backup-*');
-        if (count($extantbackups) > 0) {
-            $buildrender = '';
-            foreach ($extantbackups as $fname) {
-                $filesize = round(filesize($fname) / 1024.0);
-                $buildrender .= '{{:' . $this->getConf('backupnamespace') . ':' . basename($fname) . '}} (' . $filesize . " kiB)\\\\\n";
-            }
-            print $this->locale_xhtml('oldbackups');
-            ptln('<form action="' . wl($ID) . '" method="post">');
-            ptln('	<input type="hidden" name="do"   value="admin" />');
-            ptln('	<input type="hidden" name="page" value="' . $this->getPluginName() . '" />');
-            ptln('<input type="submit" class="button" name="delete[all]" value="Delete"/>');
-            print $this->render_text($buildrender);
-            ptln('</form>');
-        }
 
         print $this->locale_xhtml('donate');
+
+    }
+
+
+    protected function getForm()
+    {
+        global $ID;
+        $form = new \dokuwiki\Form\Form([
+            'method' => 'POST',
+            'action' => wl($ID, ['do' => 'admin', 'page' => 'backup'], false, '&')
+        ]);
+        $form->addFieldsetOpen($this->getLang('components'));
+
+        $prefs = $this->loadPreferences();
+        foreach ($prefs as $pref => $val) {
+            $form->addCheckbox($pref, $this->getLang('bt_' . $pref))->val($val)->addClass('block');
+        }
+
+        return $form->toHTML();
+    }
+
+    /**
+     * Get the currently saved preferences
+     *
+     * @return array
+     */
+    protected function loadPreferences()
+    {
+        // FIXME set sensible defaults
+        // FIXME these selections may not be the most sensible
+        $prefs = [
+            'pages' => 1,
+            'revisions' => 1,
+            'subscriptions' => 1,
+            'media' => 1,
+            'config' => 1,
+            'templates' => 1,
+            'plugins' => 1
+        ];
+        // FIXME load and merge last used preferences
+
+        return $prefs;
+    }
+
+
+    protected function runPearBackup($files, $finalfile, $tarfilename, $basedir, $compress_type)
+    {
+        //Create archive object, add files, compile and compress.
+        $tar = new Archive_Tar($finalfile, $compress_type);
+        $result = $tar->createModify($files, '', $basedir);
+        $tar->_Archive_Tar();
+
+        return ($result) ? $tarfilename . '.' . $compress_type : '';    //return filename on success...
+    }
+
+    protected function runExecBackup($files, $tarfilename, $basename, $basedir)
+    {
+        $result = false;
+        $i = 0;    //mark for first file
+        $rval = 0;
+        //dbg("runExecBackup(".print_r($files,true).", '$tarfilename', '$basename', '$basedir')");
+
+        // Put all to-be-tarred filenames into a manifest.
+        $manifile = $tarfilename . '.manifest.txt';
+        $manihandle = fopen($manifile, 'w');
+        foreach ($files as $item) fwrite($manihandle, $item . "\n");
+        fclose($manihandle);
+
+        $tarfilename = escapeshellarg($tarfilename);
+        $res = bt_exec("tar -cf $tarfilename -C " . escapeshellarg($basedir) . " --files-from " . escapeshellarg($manifile));
+        unlink($manifile);
+        if (!$res)
+            return ''; //tar failed (possibly out of memory)
+
+        if (bt_exec('bzip2 --version'))
+            if (bt_exec('bzip2 -9 ' . $tarfilename)) return $basename . '.bz2';    //Bzip2 compression available.
+        if (bt_exec('gzip --version'))
+            if (bt_exec('gzip -9 ' . $tarfilename)) return $basename . '.gz';    //Gzip compression available.
+        return $basename;                    //No compression available, but tar succeeded
     }
 
     // returns true if $fname is not in the filter list
