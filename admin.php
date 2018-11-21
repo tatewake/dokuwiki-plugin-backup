@@ -36,11 +36,44 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
         } else {
             echo $this->locale_xhtml('intro');
             echo $this->getForm();
-
-            // FIXME list or link to recent backups
+            $this->listBackups();
         }
 
         echo $this->locale_xhtml('donate');
+        echo '</div>';
+    }
+
+    /**
+     * Lists the 5 most recent backups if any.
+     */
+    protected function listBackups()
+    {
+        global $ID;
+        $ns = $this->getConf('backupnamespace');
+        $link = wl($ID, ['do' => 'media', 'ns' => $ns]);
+
+        echo '<div class="recent">';
+
+        $backups = glob(dirname(mediaFN("$ns:foo")) . '/*.tar*');
+        rsort($backups);
+        $backups = array_slice($backups, 0, 5);
+        if ($backups) {
+            echo '<h2>' . $this->getLang('recent') . '</h2>';
+            echo '<ul>';
+            foreach ($backups as $full) {
+                $backup = basename($full);
+                $url = ml("$ns:$backup");
+                echo '<li><div class="li">';
+                echo '<a href="' . $url . '">' . $backup . '</a> ';
+                echo filesize_h(filesize($full));
+                echo ' ';
+                echo dformat(filemtime($full), '%f');
+                echo '</div></li>';
+            }
+            echo '</ul>';
+        }
+
+        echo '<p>' . sprintf($this->getLang('medians'), $ns, $link) . '</p>';
         echo '</div>';
     }
 

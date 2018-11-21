@@ -27,3 +27,5 @@ $lang['bt_create_backup'] = 'Create Backup';
 $lang['running'] = 'The backup tool is working, please wait';
 $lang['success'] = 'Backup successful. Download <a href="%s">%s</a>.';
 
+$lang['medians'] = 'Your backups are stored in <code>%s</code>. Use the <a href="%s">Media Manager</a> to download or delete old backups.';
+$lang['recent'] = 'Your most recent backups:';
