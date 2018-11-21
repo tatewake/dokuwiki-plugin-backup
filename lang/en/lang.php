@@ -31,6 +31,7 @@ $lang['bt_create_backup'] = 'Create Backup';
 $lang['bt_archiving'] = 'Archiving';
 $lang['bt_compressing_archive'] = 'Compressing archive';
 
+$lang['running'] = 'The backup tool is working, please wait';
 $lang['success'] = 'Backup successful. Download <a href="%s">%s</a>.';
 
 $lang['backupnamespace'] = 'Media namespace (e.g. <code>wiki:backup</code>) in which to store backup files.';

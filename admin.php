@@ -31,6 +31,8 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
     {
         global $INPUT;
 
+        echo '<div class="plugin_backup">';
+
         if ($INPUT->post->bool('backup')) {
             $this->runBackup();
         } else {
@@ -41,6 +43,7 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
         }
 
         echo $this->locale_xhtml('donate');
+        echo '</div>';
     }
 
     /**
@@ -48,12 +51,19 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
      */
     protected function runBackup()
     {
-        echo $this->locale_xhtml('outro');
-        tpl_flush();
+        echo '<h1>' . $this->getLang('menu') . '</h1>';
+        echo '<p class="running">';
+        echo hsc($this->getLang('running'));
+        echo '&nbsp;';
+        echo '<img src="' . DOKU_BASE . 'lib/plugins/backup/spinner.gif" alt="…" />';
+        echo '</p>';
+
         $id = $this->createBackupID();
         $fn = mediaFN($id);
         try {
             echo '<div class="log">';
+            echo '<script>plugin_backup.start();</script>';
+            tpl_flush();
             $this->createBackup($fn, $this->loadPreferences(), [$this, 'logXHTML']);
             echo '</div>';
             msg(sprintf($this->getLang('success'), ml($id), $id), 1);
@@ -62,6 +72,8 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
             msg('Backup failed. ' . $e->getMessage(), -1);
             @unlink($fn);
         }
+
+        echo '<script>plugin_backup.stop();</script>';
     }
 
     /**
