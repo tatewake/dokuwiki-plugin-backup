@@ -15,5 +15,6 @@ var plugin_backup = {
             plugin_backup.timer = null;
         }
         jQuery('.plugin_backup .running').hide();
+        plugin_backup.$log.scrollTop(plugin_backup.$log[0].scrollHeight);
     }
 };
