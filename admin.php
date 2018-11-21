@@ -10,10 +10,8 @@ use splitbrain\PHPArchive\Tar;
  */
 class admin_plugin_backup extends DokuWiki_Admin_Plugin
 {
-    var $state = 0;
-    var $backup = '';
-
     protected $prefFile = DOKU_CONF . 'backup.json';
+    protected $filters = null;
 
     /** @inheritdoc */
     public function handle()
@@ -231,13 +229,36 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
 
             // custom filter:
             if ($filter !== null && !$filter($file)) continue;
-            // default filter:
-            // FIXME $this->getConf('filterdirs');
+            if (!$this->defaultFilter($file)) continue;
 
             if ($logger !== null) $logger($file);
             $tar->addFile($path, $file);
         }
+    }
 
+    /**
+     * Checks the default filters against the given backup path
+     *
+     * We also filter .git directories
+     *
+     * @param string $path the backup path
+     * @return bool true if the file should be backed up, false if not
+     */
+    protected function defaultFilter($path)
+    {
+        if ($this->filters === null) {
+            $this->filters = explode("\n", $this->getConf('filterdirs'));
+            $this->filters = array_map('trim', $this->filters);
+            $this->filters = array_filter($this->filters);
+        }
+
+        if (strpos($path, '/.git') !== false) return false;
+
+        foreach ($this->filters as $filter) {
+            if (strpos($path, $filter) === 0) return false;
+        }
+
+        return true;
     }
 
     /**
