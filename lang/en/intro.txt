@@ -7,10 +7,9 @@ The tool will create a [[wp>tar_(file format)|tar]] archive, compressed with eit
 **Notes:**
   * If the backup times out on your server, try backing up fewer items at once.
   * The final backup file is named //dw-backup-YearMonthDay-HourMinuteSecond.tar.bz2//, and time is in **24 hour format**.
-    * The file is formatted this way so that backups will **always** be sorted correctly. I suggest you not change this, but it's up to you.
+    * The file is formatted this way so that backups will **always** be sorted correctly.
   * **If you are backing up anything confidential** (e.g., private pages, or configuration files that include account passwords), you should set the backup namespace to be viewable only by administrators, or delete your backup files immediately after creating them.
-  * You can filter out specific directories from being backed up (e.g., old backups, or rendered equation cache from [[doku>plugin:latex|LaTeX plugin]]). See this plugin's configuration for details. 
-    * The backup method "GNU Tar (fast;unfiltered)" generally ignores this filtering.
+  * You can filter out specific directories from being backed up (e.g., old backups, or rendered equation cache from [[doku>plugin:latex|LaTeX plugin]]). See this plugin's configuration for details.
 
 Please select the following items you wish to backup...
 

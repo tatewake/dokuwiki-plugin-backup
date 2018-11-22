@@ -1,9 +1,0 @@
-====== Outil de sauvegarde ======
-
-**L'outil de sauvegarde (Backup Tool) ne fontionnera pas avec votre configuration.**
-
-Il y a deux manières de résoudre votre problème :
-  * Installez, ou demandez à votre hébergeur d'installer [[http://pear.php.net/package/PEAR|PEAR]], une bibliothèque pour PHP qui contient un outil d'archivage que Backup Tool peut utiliser.
-  * Permettez à votre serveur d'accéder à la fonction PHP [[http://us.php.net/exec|exec]], ainsi que l'accès en ligne de commande, aux commandes **tar**, et, soit **gzip** soit **bzip2**.
-
-Quand l'une de ces deux conditions sera remplie sur votre système, rafraichissez la page du plugin de Backup : ce message n'apparaitra plus, et vous serez en mesure de commencer un backup.

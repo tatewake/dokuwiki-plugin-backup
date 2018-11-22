@@ -1,382 +1,456 @@
 <?php
+
+use splitbrain\PHPArchive\Tar;
+
 /**
  * Backup Tool for DokuWiki
- * 
- * @license	GPL 2 (http://www.gnu.org/licenses/gpl.html)
- * @author	 Terence J. Grant<tjgrant@tatewake.com>
- */
- 
-if(!defined('DOKU_INC')) define('DOKU_INC',realpath(dirname(__FILE__).'/../../').'/');
-if(!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
-if(!defined('DOKU_INCLUDE')) define('DOKU_INCLUDE',DOKU_INC.'inc/');
-require_once(DOKU_PLUGIN . 'admin.php');
-
-include_once(DOKU_PLUGIN.'backup/pref_code.php');
-
-@include_once("Archive/Tar.php");	//PEAR Archive/Tar
-
-/**
- * All DokuWiki plugins to extend the admin function
- * need to inherit from this class
+ *
+ * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
+ * @author     Terence J. Grant<tjgrant@tatewake.com>
+ * @author     Andreas Wagner <andreas.wagner@em.uni-frankfurt.de>
+ * @author     Andreas Gohr <gohr@cosmocode.de>
  */
 class admin_plugin_backup extends DokuWiki_Admin_Plugin
 {
-var $state = 0;
-var $backup = '';
+    protected $prefFile = DOKU_CONF . 'backup.json';
+    protected $filters = null;
 
-	/**
-	 * Constructor
-	 */
-	function admin_plugin_backup()
-	{
-		$this->setupLocale();
-	}
+    /** @inheritdoc */
+    public function handle()
+    {
+        global $INPUT;
+        if ($INPUT->post->has('pref') && checkSecurityToken()) {
+            $this->savePreferences($INPUT->post->arr('pref'));
+        }
+    }
 
-	/**
-	 * return some info
-	 */
-	function getInfo()
-	{
-		if(method_exists(DokuWiki_Admin_Plugin,"getInfo")) {
-			 return parent::getInfo(); /// this will grab the data from the plugin.info.txt
-		} else
-			// Otherwise return some hardcoded data for old dokuwikis
-			return array(
-				'author' => 'Terence J. Grant, Andreas Wagner',
-				'email'  => 'tjgrant@tatewake.com, andreas.wagner@em.uni-frankfurt.de',
-				'date'   => '??',
-				'name'   => 'BackupTool for DokuWiki',
-				'desc'   => 'A tool to backup your data and configuration.',
-				'url'	=> 'http://www.dokuwiki.org/plugin:backup',
-			);
-	}
+    /**
+     * output appropriate html
+     */
+    public function html()
+    {
+        global $INPUT;
 
-	/**
-	 * return sort order for position in admin menu
-	 */
-	function getMenuSort()
-	{
-		return 999;
-	}
-	
+        echo '<div class="plugin_backup">';
 
-	/**
-	 * handle user request
-	 */
-	function handle()
-	{
-		$this->backup = $_REQUEST['backup'];
-		if (is_array($this->backup))
-		{
-			$this->state = 1;
-		} elseif (is_array($_POST['delete'])) {
-			$this->state = 2;
-		} else {
-			$this->state = 0;
-		}
-	}
+        if ($INPUT->post->bool('backup')) {
+            $this->runBackup();
+        } else {
+            echo $this->locale_xhtml('intro');
+            echo $this->getForm();
+            $this->listBackups();
+        }
 
-	function runPearBackup($files, $finalfile, $tarfilename, $basedir, $compress_type)
-	{
-		//Create archive object, add files, compile and compress.
-		$tar = new Archive_Tar($finalfile,$compress_type);
-		$result = $tar->createModify($files,'',$basedir);
-		$tar->_Archive_Tar();
-		
-		return ($result) ? $tarfilename.'.'.$compress_type : '';	//return filename on success...
-	}
+        echo $this->locale_xhtml('donate');
+        echo '</div>';
+    }
 
-	function runExecBackup($files, $tarfilename, $basename, $basedir)
-	{
-		$result = false;
-		$i = 0;	//mark for first file
-		$rval = 0;
-	  //dbg("runExecBackup(".print_r($files,true).", '$tarfilename', '$basename', '$basedir')");
-		
-		// Put all to-be-tarred filenames into a manifest.
-		$manifile = $tarfilename.'.manifest.txt';
-		$manihandle = fopen($manifile, 'w');
-		foreach($files as $item) fwrite($manihandle,$item."\n");
-		fclose($manihandle);
-		
-		$tarfilename = escapeshellarg($tarfilename);
-		$res = bt_exec("tar -cf $tarfilename -C ".escapeshellarg($basedir)." --files-from ".escapeshellarg($manifile));
-		unlink($manifile);
-		if (!$res)
-			return ''; //tar failed (possibly out of memory)
+    /**
+     * Lists the 5 most recent backups if any.
+     */
+    protected function listBackups()
+    {
+        global $ID;
+        $ns = $this->getConf('backupnamespace');
+        $link = wl($ID, ['do' => 'media', 'ns' => $ns]);
 
-		if (bt_exec('bzip2 --version'))
-			if (bt_exec('bzip2 -9 '.$tarfilename)) return $basename.'.bz2';	//Bzip2 compression available.
-		if (bt_exec('gzip --version'))
-			if (bt_exec('gzip -9 '.$tarfilename)) return $basename.'.gz';	//Gzip compression available.
-		return $basename;					//No compression available, but tar succeeded
-	}
+        echo '<div class="recent">';
 
-	/**
-	 * output appropriate html
-	 */
-	function html()
-	{
-		global $conf;
-		global $bt_loaded, $bt_settings;
+        $backups = glob(dirname(mediaFN("$ns:foo")) . '/*.tar*');
+        rsort($backups);
+        $backups = array_slice($backups, 0, 5);
+        if ($backups) {
+            echo '<h2>' . $this->getLang('recent') . '</h2>';
+            echo '<ul>';
+            foreach ($backups as $full) {
+                $backup = basename($full);
+                $url = ml("$ns:$backup");
+                echo '<li><div class="li">';
+                echo '<a href="' . $url . '">' . $backup . '</a> ';
+                echo filesize_h(filesize($full));
+                echo ' ';
+                echo dformat(filemtime($full), '%f');
+                echo '</div></li>';
+            }
+            echo '</ul>';
+        }
 
-		$bt_pearWorks = (class_exists("Archive_Tar")) ? true : false;
-		$bt_execWorks = bt_exec("tar --version");
+        echo '<p>' . sprintf($this->getLang('medians'), $ns, $link) . '</p>';
+        echo '</div>';
+    }
 
-		// Where to put these files?
-		$tarpath = $conf['mediadir'].'/'.strtr($this->getConf('backupnamespace'),':','/');
-		
-		if (!($bt_pearWorks || $bt_execWorks))	//if neither works, display the error message.
-		{
-			print $this->locale_xhtml('error');
-		}
-		else
-		{
-			//dbg(print_r($_REQUEST,true));
-			if($this->state == 2) {
-				$killsuccess = true;
-				ob_flush(); flush();
-				$extantbackups = glob($tarpath.'/dw-backup-*');
-				foreach($extantbackups as $kill)
-					if(unlink($kill)) {
-						ptln('<div class="info">'.'Deleted file: '.htmlspecialchars($kill).'</div>');
-					} else {
-						$killsuccess = false;
-						ptln('<div class="error">'.'Could not delete: '.htmlspecialchars($kill).'</div>');
-					}
-			}
-			
-			if ($this->state == 0 || $this->state == 2)
-			{
-				//Print Backup introduction page
-				print $this->locale_xhtml('intro');
-	
-				ptln('<form action="'.wl($ID).'" method="post">');
-				ptln('	<input type="hidden" name="do"   value="admin" />');
-				ptln('	<input type="hidden" name="page" value="'.$this->getPluginName().'" />');
-				print '<center>';
-	
-//				ptln('bt_settings[type] = '.$bt_settings['type'].'<br/>');
-				ptln('	Backup method: <select name="backup[type]">');
-				if ($bt_pearWorks == true) ptln('		<option value="PEAR" '.(strcmp($bt_settings['type'], 'PEAR') == 0 ? 'selected' : '').'>PEAR Archive Library</option>');
-				if ($bt_execWorks == true) ptln('		<option value="exec" '.(strcmp($bt_settings['type'], 'exec') == 0 ? 'selected' : '').'>GNU Tar (filtered)</option>');
-				if ($bt_execWorks == true) ptln('		<option value="lazy" '.(strcmp($bt_settings['type'], 'lazy') == 0 ? 'selected' : '').'>GNU Tar (fast;unfiltered)</option>');
-				ptln('	</select><br/><br/>');
+    /**
+     * Runs the backup process with XHTML output
+     */
+    protected function runBackup()
+    {
+        echo '<h1>' . $this->getLang('menu') . '</h1>';
+        echo '<p class="running">';
+        echo hsc($this->getLang('running'));
+        echo '&nbsp;';
+        echo '<img src="' . DOKU_BASE . 'lib/plugins/backup/spinner.gif" alt="…" />';
+        echo '</p>';
 
-				print '<table class="inline">';
-				print '	<tr><th> '.$this->getLang('bt_item_type').' </th><th> '.$this->getLang('bt_add_to_archive').' </th></tr>';
-				print '	<tr><td> '.$this->getLang('bt_pages').' </td><td><input type="checkbox" name="backup[pages]" '.$bt_settings['pages'].'/></td></tr>';
-				print '	<tr><td> '.$this->getLang('bt_revisions').' </td><td><input type="checkbox" name="backup[revisions]" '.$bt_settings['revisions'].'/></td></tr>';
-				print '	<tr><td> '.$this->getLang('bt_subscriptions').'</td><td><input type="checkbox" name="backup[subscriptions]" '.$bt_settings['subscriptions'].'/></td></tr>';
-				print '	<tr><td> '.$this->getLang('bt_media').' </td><td><input type="checkbox" name="backup[media]" '.$bt_settings['media'].'/></td></tr>';
-				print '	<tr><td> '.$this->getLang('bt_config').' </td><td><input type="checkbox" name="backup[config]" '.$bt_settings['config'].'/></td></tr>';
-				print '	<tr><td> '.$this->getLang('bt_templates').'</td><td><input type="checkbox" name="backup[templates]" '.$bt_settings['templates'].'/></td></tr>';
-				print '	<tr><td> '.$this->getLang('bt_plugins').'</td><td><input type="checkbox" name="backup[plugins]" '.$bt_settings['plugins'].'/></td></tr>';
-				print '</table>';
+        $id = $this->createBackupID();
+        $fn = mediaFN($id);
+        try {
+            echo '<div class="log">';
+            echo '<script>plugin_backup.start();</script>';
+            tpl_flush();
+            $this->createBackup($fn, $this->loadPreferences(), [$this, 'logXHTML']);
+            echo '</div>';
+            msg(sprintf($this->getLang('success'), ml($id), $id), 1);
+        } catch (\splitbrain\PHPArchive\ArchiveIOException $e) {
+            echo '</div>'; // close the log wrapping
+            msg('Backup failed. ' . $e->getMessage(), -1);
+            @unlink($fn);
+        }
 
-				print '<br />';
-				print '<p><input type="submit" class="button" value="'.$this->getLang('bt_create_backup').'"></p></center>';
-				print '</form>';
-			}
-			elseif ($this->state == 1)
-			{
-				//Save settings...
-				$bt_settings['type']					= strcmp($this->backup['type'], 'PEAR') == 0 ? 'PEAR' :
-																				 strcmp($this->backup['type'], 'exec') == 0 ? 'exec' : 'lazy';
-				$bt_settings['pages']					= strcmp($this->backup['pages'], 'on') == 0 ? 'checked' : '';
-				$bt_settings['revisions']			= strcmp($this->backup['revisions'], 'on') == 0 ? 'checked' : '';
-				$bt_settings['subscriptions']	= strcmp($this->backup['subscriptions'], 'on') == 0 ? 'checked' : '';
-				$bt_settings['media']					= strcmp($this->backup['media'], 'on') == 0 ? 'checked' : '';
-				$bt_settings['config']				= strcmp($this->backup['config'], 'on') == 0 ? 'checked' : '';
-				$bt_settings['templates']			= strcmp($this->backup['templates'], 'on') == 0 ? 'checked' : '';
-				$bt_settings['plugins']				= strcmp($this->backup['plugins'], 'on') == 0 ? 'checked' : '';
-				bt_save();
-				
-				//Print outgoing message...
-				print $this->locale_xhtml('outro');
-				
-				ob_flush(); flush();
+        echo '<script>plugin_backup.stop();</script>';
+    }
 
-				//Generate file names
-				$tarfilename = 'dw-backup-'.date('Ymd-His').".tar";
-				$compress_type = (extension_loaded('bz2') ? 'bz2' : (extension_loaded('zlib') ? 'gz' : ''));
-				$finalfile = $tarfilename.'.'.$compress_type;
+    /**
+     * The logger to output the progress of the backup
+     *
+     * We want the filenames a little bit less prominent, so we handle those differently
+     *
+     * @param string $msg
+     * @param int $level
+     */
+    protected function logXHTML($msg, $level = 0)
+    {
+        if ($level === -1 || $level === 1) {
+            msg(hsc($msg), $level);
+        } else {
+            echo '<div>' . hsc($msg) . '</div>';
+        }
+        ob_flush();
+        flush();
+    }
 
-				//Generate array of files
-				$files = (array)NULL;
-				
-				if($this->backup['config'] && is_readable(DOKU_INC."inc/preload.php"))
-					$files[] = DOKU_INC."inc/preload.php"; // the preload, if existant, is part of config.
-					
-				if (strcmp($this->backup['type'], 'lazy') == 0)	//Use fast lazy method
-				{
-					if ($this->backup['pages'])					$files = array_merge($files, array($conf['datadir']));
-					if ($this->backup['revisions'])			$files = array_merge($files, array($conf['olddir']));
-					if ($this->backup['subscriptions'])	$files = array_merge($files, array($conf['metadir']));
-					if ($this->backup['config'])				$files = array_merge($files, array(DOKU_CONF));
-					if ($this->backup['templates'])			$files = array_merge($files, array(DOKU_INC . "lib/tpl"));
-					if ($this->backup['plugins'])				$files = array_merge($files, array(DOKU_INC . "lib/plugins"));
-					if ($this->backup['media'])					$files = array_merge($files, array($conf['mediadir']));
-				}
-				else	//Use filtered files method
-				{
-					if ($this->backup['pages'])					$files = array_merge($files, directoryToArray($conf['datadir']));
-					if ($this->backup['revisions'])			$files = array_merge($files, directoryToArray($conf['olddir']));
-					if ($this->backup['subscriptions'])	$files = array_merge($files, directoryToArray($conf['metadir']));
-					if ($this->backup['config'])				$files = array_merge($files, directoryToArray(DOKU_CONF));
-					if ($this->backup['templates'])			$files = array_merge($files, directoryToArray(DOKU_INC . "lib/tpl"));
-					if ($this->backup['plugins'])				$files = array_merge($files, directoryToArray(DOKU_INC . "lib/plugins"));
-					if ($this->backup['media'])  				$files = array_merge($files, directoryToArray($conf['mediadir']));
-				}
+    /**
+     * Create the preference form
+     *
+     * @return string
+     */
+    protected function getForm()
+    {
+        global $ID;
+        $form = new \dokuwiki\Form\Form([
+            'method' => 'POST',
+            'action' => wl($ID, ['do' => 'admin', 'page' => 'backup'], false, '&')
+        ]);
+        $form->addFieldsetOpen($this->getLang('components'));
 
-				// convert all filenames to canonical ones.
-				$files = array_map('realpath',$files);
-				
-				// construct list of filtered paths
-				$filterpaths = array_map('trim',explode("\n",$this->getConf('filterdirs')));
-				if($this->getConf('filterbackups'))
-					$filterpaths[] = $tarpath;
-				foreach(array_keys($filterpaths) as $key) {
-					if(!is_dir($filterpaths[$key]))
-						unset($filterpaths[$key]); // remove non-directories
-					else { // convert to realpath, check if path has trailing slash; if not, add one.
-						$dir = realpath($filterpaths[$key]);
-						if($dir[strlen($dir)-1] != DIRECTORY_SEPARATOR)
-							$dir .= DIRECTORY_SEPARATOR;
-						$filterpaths[$key] = $dir;
-					}	
-				}
-				$this->filterdirs = array_combine($filterpaths,array_map('strlen',$filterpaths));
-				// then filter away and sort.
-				$this->filterresult = (array)NULL;
-				$files = array_filter($files,array($this,'filterFile'));
-				sort($files,SORT_LOCALE_STRING);
-				
-				// Compute the common directory -- this will be subtracted from the filenames.
-				$basedir = dirname(substr($files[0],0,_commonPrefix($files)).'aaaaa');
-				if($basedir[strlen($basedir)-1] != DIRECTORY_SEPARATOR)
-					$basedir .= DIRECTORY_SEPARATOR;
-				
-				//Run the backup method
-				$this->_mkpath($tarpath,$conf['dmode']);
-				if (strcmp($this->backup['type'], 'PEAR') == 0)
-					$finalfile = $this->runPearBackup($files, $tarpath.'/'.$finalfile, $tarfilename, $basedir, $compress_type);
-				else	//exec and lazy both use the exec method
-				{
-					$this->_commonlength = strlen($basedir);
-					$files = array_map(array($this,'getRelativePath'),$files);
-					$finalfile = $this->runExecBackup($files, $tarpath.'/'.$tarfilename, $tarfilename, $basedir);
-				}
+        $prefs = $this->loadPreferences();
+        foreach ($prefs as $pref => $val) {
+            $label = $this->getLang('bt_' . $pref);
+            if (!$label) continue; // unknown pref, skip it
 
-				if ($finalfile == '')
-				{
-					print $this->locale_xhtml('memory');
-				}
-				else
-				{
-					print $this->locale_xhtml('download');
-					print '<div class="success">';
-					$filesize = round(filesize($tarpath.'/'.$finalfile)/1024.0);
-					print $this->render_text('Download: {{:'.$this->getConf('backupnamespace').':'.$finalfile.'}} ('.$filesize.' kiB)');
-					print '</div>';
-					
-					if(count($this->filterresult)>0) {
-						ptln("Files not backed up (blacklisted):<ul>");
-						foreach($this->filterresult as $dir => $num)
-							ptln("<li>$num files under <tt>".htmlspecialchars($dir)."</tt></li>");
-						ptln("</ul>");
-					}
-				}
-				ob_flush(); flush();
-			}
-		}
-		
-		$extantbackups = glob($tarpath.'/dw-backup-*');
-		if(count($extantbackups) > 0) {
-			$buildrender = '';
-			foreach ($extantbackups as $fname) {
-				$filesize = round(filesize($fname)/1024.0);
-				$buildrender .= '{{:'.$this->getConf('backupnamespace').':'.basename($fname).'}} ('.$filesize." kiB)\\\\\n";
-			}
-			print $this->locale_xhtml('oldbackups');
-			ptln('<form action="'.wl($ID).'" method="post">');
-			ptln('	<input type="hidden" name="do"   value="admin" />');
-			ptln('	<input type="hidden" name="page" value="'.$this->getPluginName().'" />');
-			ptln('<input type="submit" class="button" name="delete[all]" value="Delete"/>');
-			print $this->render_text($buildrender);
-			ptln('</form>');
-		}
-		
-		print $this->locale_xhtml('donate');
-	}
-	
-	// returns true if $fname is not in the filter list
-	function filterFile($fname) {
-		foreach($this->filterdirs as $dir=>$len)
-			if(!strncmp($dir,$fname,$len)) {
-				// dbg("filterFile($fname) -- FILTERED OUT");
-				$this->filterresult[$dir] = isset($this->filterresult[$dir])?
-						($this->filterresult[$dir]+1):1;
-				return false; // $fname has $dir as prefix. filter it.
-			}
-		return true; // $fname does not match any prefix.
-	}
-	
-	// subtract first few characters from $fname
-	function getRelativePath($fname) {
-		return substr($fname,$this->_commonlength);
-	}
+            $form->setHiddenField("pref[$pref]", '0');
+            $cb = $form->addCheckbox("pref[$pref]", $label)->useInput(false)->addClass('block');
+            if ($val) $cb->attr('checked', 'checked');
+        }
 
-	function _mkpath($path,$dmask=0777)
-	{
-		if(@mkdir($path,$dmask) or file_exists($path)) return true;
-		return ($this->_mkpath(dirname($path),$dmask) and mkdir($path,$dmask));
-	}
-}
+        $form->addButton('backup', $this->getLang('bt_create_backup'));
+        return $form->toHTML();
+    }
 
-function bt_exec($cmd)
-{
-	$oval = array();
-	$rval = 0;
-	exec($cmd, $oval, $rval);
+    /**
+     * Get the currently saved preferences
+     *
+     * @return array
+     */
+    protected function loadPreferences()
+    {
+        $prefs = [
+            'config' => 1,
+            'pages' => 1,
+            'revisions' => 1,
+            'meta' => 1,
+            'media' => 1,
+            'mediarevs' => 0,
+            'mediameta' => 1,
+            'templates' => 0,
+            'plugins' => 0
+        ];
+        // load and merge saved preferences
+        if (file_exists($this->prefFile)) {
+            $more = json_decode(io_readFile($this->prefFile, false), true);
+            $prefs = array_merge($prefs, $more);
+        }
 
-	return (($rval == 0) ? true : false);	
-}
+        return $prefs;
+    }
 
-/// Return length of longest common prefix in an array of strings.
-function _commonPrefix($array) {
-	if(count($array) < 2) {
-		if(count($array) == 0)
-			return false; // empty array: undefined prefix
-		else
-			return strlen($array[0]); // 1 element: trivial case
-	}
-	$len = max(array_map('strlen',$array)); // initial upper limit: max length of all strings.
-	$prevval = reset($array);
-	while(($newval = next($array)) !== FALSE) {
-		for($j = 0 ; $j < $len ; $j += 1)
-			if($newval[$j] != $prevval[$j])
-				$len = $j;
-		$prevval = $newval;
-	}
-	return $len;
-}
+    /**
+     * Store the backup preferences
+     *
+     * @param array $prefs
+     */
+    protected function savePreferences($prefs)
+    {
+        $prefs = array_map('intval', $prefs);
+        io_saveFile($this->prefFile, json_encode($prefs, JSON_PRETTY_PRINT));
+    }
 
-// from http://snippets.dzone.com/posts/show/155 :
-function directoryToArray($directory) {
-	$array_items = array();
-	if ($handle = opendir($directory)) {
-		while (false !== ($file = readdir($handle))) {
-			if ($file != "." && $file != ".." && $file != "_dummy" && $file != "disabled") {
-				$file = $directory . "/" . $file;
-				if (is_dir($file)) {
-					$array_items = array_merge($array_items, directoryToArray($file));
-				} else {
-					if(filesize($file) !== 0) $array_items[] = preg_replace("/\/\//si", "/", $file);
-				}
-			}
-		}
-		closedir($handle);
-	}
-	return $array_items;
+    /**
+     * Generate a new unique backup name
+     *
+     * @return string
+     */
+    protected function createBackupID()
+    {
+        $tarfilename = 'dw-backup-' . date('Ymd-His') . '.tar';
+        if (extension_loaded('bz2')) {
+            $tarfilename .= '.bz2';
+        } elseif (extension_loaded('gz')) {
+            $tarfilename .= '.gz';
+        }
+        return cleanID($this->getConf('backupnamespace') . ':' . $tarfilename);
+    }
+
+    /**
+     * Create the backup
+     *
+     * @param string $fn Filename of the backup archive
+     * @param array $prefs
+     * @param Callable $logger A method compatible to DokuWiki's msg()
+     * @throws \splitbrain\PHPArchive\ArchiveIOException
+     */
+    protected function createBackup($fn, $prefs, $logger)
+    {
+        @set_time_limit(0);
+        io_mkdir_p(dirname($fn));
+        $tar = new Tar();
+        $tar->create($fn);
+
+        foreach ($prefs as $pref => $val) {
+            if (!$val) continue;
+
+            $cmd = [$this, 'backup' . ucfirst($pref)];
+            if (is_callable($cmd)) {
+                $cmd($tar, $logger);
+            } else {
+                $logger('Can\'t call ' . $cmd[1], -1);
+            }
+        }
+
+        $tar->close();
+    }
+
+    /**
+     * Adds the given directory recursively to the tar archive
+     *
+     * @param Tar $tar
+     * @param string $dir The original directory
+     * @param string $as The directory name to use in the archive
+     * @param Callable|null $logger msg() compatible logger
+     * @param Callable|null $filter a filter method, returns true for all files to add
+     * @throws \splitbrain\PHPArchive\ArchiveCorruptedException
+     * @throws \splitbrain\PHPArchive\ArchiveIOException
+     */
+    protected function addDirectoryToTar(Tar $tar, $dir, $as, $logger = null, $filter = null)
+    {
+        $dir = fullpath($dir);
+        $ri = new RecursiveDirectoryIterator($dir, FilesystemIterator::SKIP_DOTS | FilesystemIterator::UNIX_PATHS);
+        $rii = new RecursiveIteratorIterator($ri, RecursiveIteratorIterator::SELF_FIRST);
+
+        foreach ($rii as $path => $info) {
+            $file = $this->stripPrefix($path, $dir);
+            $file = $as . '/' . $file;
+
+            // custom filter:
+            if ($filter !== null && !$filter($file)) continue;
+            if (!$this->defaultFilter($file)) continue;
+
+            if ($logger !== null) $logger($file);
+            $tar->addFile($path, $file);
+        }
+    }
+
+    /**
+     * Checks the default filters against the given backup path
+     *
+     * We also filter .git directories
+     *
+     * @param string $path the backup path
+     * @return bool true if the file should be backed up, false if not
+     */
+    protected function defaultFilter($path)
+    {
+        if ($this->filters === null) {
+            $this->filters = explode("\n", $this->getConf('filterdirs'));
+            $this->filters = array_map('trim', $this->filters);
+            $this->filters = array_filter($this->filters);
+        }
+
+        if (strpos($path, '/.git') !== false) return false;
+
+        foreach ($this->filters as $filter) {
+            if (strpos($path, $filter) === 0) return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Strip the given prefix from the directory
+     *
+     * @param string $dir
+     * @param string $prefix
+     * @return string
+     */
+    protected function stripPrefix($dir, $prefix)
+    {
+        if (strpos($dir, $prefix) === 0) {
+            $dir = substr($dir, strlen($prefix));
+        }
+        return ltrim($dir, '/');
+    }
+
+    // region backup components
+
+    /**
+     * Backup the config files
+     *
+     * @param Tar $tar
+     * @param Callable $logger
+     * @throws \splitbrain\PHPArchive\ArchiveCorruptedException
+     * @throws \splitbrain\PHPArchive\ArchiveIOException
+     */
+    protected function backupConfig(Tar $tar, $logger)
+    {
+        $this->addDirectoryToTar($tar, DOKU_CONF, 'conf', $logger, function ($path) {
+            return !preg_match('/\.(dist|example|bak)/', $path);
+        });
+        // we consider the preload a config file
+        if (file_exists(DOKU_INC . 'inc/preload.php')) {
+            $tar->addFile(DOKU_INC . 'inc/preload.php', 'inc/preload.php');
+        }
+    }
+
+    /**
+     * Backup the pages
+     *
+     * @param Tar $tar
+     * @param Callable $logger
+     * @throws \splitbrain\PHPArchive\ArchiveCorruptedException
+     * @throws \splitbrain\PHPArchive\ArchiveIOException
+     */
+    protected function backupPages(Tar $tar, $logger)
+    {
+        global $conf;
+        $this->addDirectoryToTar($tar, $conf['datadir'], 'data/pages', $logger);
+    }
+
+    /**
+     * Backup the page revisions
+     *
+     * @param Tar $tar
+     * @param Callable $logger
+     * @throws \splitbrain\PHPArchive\ArchiveCorruptedException
+     * @throws \splitbrain\PHPArchive\ArchiveIOException
+     */
+    protected function backupRevisions(Tar $tar, $logger)
+    {
+        global $conf;
+        $this->addDirectoryToTar($tar, $conf['olddir'], 'data/attic', $logger);
+    }
+
+    /**
+     * Backup the meta files
+     *
+     * @param Tar $tar
+     * @param Callable $logger
+     * @throws \splitbrain\PHPArchive\ArchiveCorruptedException
+     * @throws \splitbrain\PHPArchive\ArchiveIOException
+     */
+    protected function backupMeta(Tar $tar, $logger)
+    {
+        global $conf;
+        $this->addDirectoryToTar($tar, $conf['metadir'], 'data/meta', $logger);
+    }
+
+    /**
+     * Backup the media files
+     *
+     * @param Tar $tar
+     * @param Callable $logger
+     * @throws \splitbrain\PHPArchive\ArchiveCorruptedException
+     * @throws \splitbrain\PHPArchive\ArchiveIOException
+     */
+    protected function backupMedia(Tar $tar, $logger)
+    {
+        global $conf;
+
+        // figure out what our backup folder would be called within the backup
+        $media = fullpath(dirname(mediaFN('foo')));
+        $self = fullpath(dirname(mediaFN($this->getConf('backupnamespace') . ':foo')));
+        $relself = 'data/media/' . $this->stripPrefix($self, $media);
+
+        $this->addDirectoryToTar($tar, $conf['mediadir'], 'data/media', $logger, function ($path) use ($relself) {
+            // skip our own backups
+            return (strpos($path, $relself) !== 0);
+        });
+    }
+
+    /**
+     * Backup the media revisions
+     *
+     * @param Tar $tar
+     * @param Callable $logger
+     * @throws \splitbrain\PHPArchive\ArchiveCorruptedException
+     * @throws \splitbrain\PHPArchive\ArchiveIOException
+     */
+    protected function backupMediarevs(Tar $tar, $logger)
+    {
+        global $conf;
+        $this->addDirectoryToTar($tar, $conf['mediaolddir'], 'data/media_attic', $logger);
+    }
+
+    /**
+     * Backup the media meta info
+     *
+     * @param Tar $tar
+     * @param Callable $logger
+     * @throws \splitbrain\PHPArchive\ArchiveCorruptedException
+     * @throws \splitbrain\PHPArchive\ArchiveIOException
+     */
+    protected function backupMediameta(Tar $tar, $logger)
+    {
+        global $conf;
+        $this->addDirectoryToTar($tar, $conf['mediametadir'], 'data/media_meta', $logger);
+    }
+
+    /**
+     * Backup the templates
+     *
+     * @param Tar $tar
+     * @param Callable $logger
+     * @throws \splitbrain\PHPArchive\ArchiveCorruptedException
+     * @throws \splitbrain\PHPArchive\ArchiveIOException
+     */
+    protected function backupTemplates(Tar $tar, $logger)
+    {
+        // FIXME skip builtin ones
+        $this->addDirectoryToTar($tar, DOKU_INC . 'lib/tpl', 'lib/tpl', $logger);
+    }
+
+    /**
+     * Backup the plugins
+     *
+     * @param Tar $tar
+     * @param Callable $logger
+     * @throws \splitbrain\PHPArchive\ArchiveCorruptedException
+     * @throws \splitbrain\PHPArchive\ArchiveIOException
+     */
+    protected function backupPlugins(Tar $tar, $logger)
+    {
+        // FIXME skip builtin ones
+        $this->addDirectoryToTar($tar, DOKU_INC . 'lib/plugins', 'lib/plugins', $logger);
+    }
+
+    // endregion
+
 }

@@ -1,7 +1,0 @@
-**Sicherung beendet!**
-
-**Hinweis**:
-  * Ältere Sicherungskopien werden **niemals gelöscht**; es bleibt Ihnen überlassen dies durchzuführen, wenn Sie es möchten.
-  * Die erstellte Sicherungskopie hat den Dateinamen
-  * //dw-backup-JahrMonatMinutenSekunden.tar.bz2//, wobei die Zeit im **24-Stunden-Format** dargestellt wird.
-    * Der Dateinamen ist in dem beschriebenen Format dargestellt, damit mehrere Sicherungskopien **immer** in chronologischer Reihenfolge sortiert werden. Es wird empfohlen, dies nicht zu ändern, aber schließlich haben Sie die Möglichkeit den Dateinamen selbst zu wählen.
