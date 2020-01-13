@@ -1,7 +1,7 @@
 base        backup
-author      Terence J. Grant, Andreas Wagner
-email       tjgrant@tatewake.com, andreas.wagner@em.uni-frankfurt.de
-date        2018-11-21
+author      Terence J. Grant, Andreas Wagner, Andreas Gohr
+email       tjgrant@tatewake.com, andreas.wagner@em.uni-frankfurt.de, gohr@cosmocode.de
+date        2020-01-12
 name        BackupTool for DokuWiki
 desc        A tool to backup your data and configuration.
 url         https://www.dokuwiki.org/plugin:backup
