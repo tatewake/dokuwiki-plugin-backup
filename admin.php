@@ -85,7 +85,7 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
     protected function runBackup()
     {
         echo '<h1>' . $this->getLang('menu') . '</h1>';
-        echo '<p class="running">';
+        echo '<p class="bt-running">';
         echo hsc($this->getLang('running'));
         echo '&nbsp;';
         echo '<img src="' . DOKU_BASE . 'lib/plugins/backup/spinner.gif" alt="…" />';
@@ -105,7 +105,8 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
             msg('Backup failed. ' . $e->getMessage(), -1);
             @unlink($fn);
         }
-
+        
+        echo '<script>document.getElementsByClassName(\'bt-running\')[0].style.visibility=\'hidden\';</script>';
         echo '<script>plugin_backup.stop();</script>';
     }
 
