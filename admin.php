@@ -15,6 +15,26 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
     protected $prefFile = DOKU_CONF . 'backup.json';
     protected $filters = null;
 
+    protected function isRunningWindows()
+    {
+        return (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? true : false;
+    }
+
+    public function btRemoveFiles($dir, $startString)
+    {
+        if (is_dir($dir)) {
+            $objects = scandir($dir);
+
+            foreach ($objects as $object) {
+                if ($object != "." && $object != ".." && substr($object, 0, strlen($startString)) === $startString) {
+                    if (!is_dir($dir. DIRECTORY_SEPARATOR .$object) || is_link($dir."/".$object)) {
+                        unlink($dir. DIRECTORY_SEPARATOR .$object);
+                    }
+                }
+            }
+        }
+    }
+
     /** @inheritdoc */
     public function handle()
     {
@@ -34,14 +54,36 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
         echo '<div class="plugin_backup">';
 
         if ($INPUT->post->bool('backup')) {
+            $this->removeMediaAtticBackups();
             $this->runBackup();
         } else {
+            echo '<h1>' . $this->getLang('menu') . '</h1>';
+
+            if ($this->isRunningWindows()) {
+                msg($this->getLang('windows-msg'), 2);
+            }
+
+            if ($this->isRunningWindows()) {
+                echo '<div class="bt-warning" style="display: block;">';
+                echo $this->locale_xhtml('windows');
+                echo '<button type="button" class="collapsible">I understand</button>';
+                echo '</div>';
+
+                echo '<div class="bt-content" style="display: none;">';
+            } else {
+                echo '<div>';
+            }
+
             echo $this->locale_xhtml('intro');
+
             echo $this->getForm();
+
             $this->listBackups();
+
+            echo $this->locale_xhtml('donate');
+            echo '</div>';
         }
 
-        echo $this->locale_xhtml('donate');
         echo '</div>';
     }
 
@@ -79,13 +121,26 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
         echo '</div>';
     }
 
+    protected function removeMediaAtticBackups()
+    {
+        try {
+            global $conf;
+
+            $self = fullpath(dirname(mediaFN($this->getConf('backupnamespace') . ':foo')));
+            $targetdir = $conf['mediaolddir'] . '/' . $this->stripPrefix($self, fullpath(dirname(mediaFN($conf['savedir']))));
+
+            $this->btRemoveFiles($targetdir, 'dw-backup-');
+        } catch (Exception $e) {
+        }
+    }
+
     /**
      * Runs the backup process with XHTML output
      */
     protected function runBackup()
     {
         echo '<h1>' . $this->getLang('menu') . '</h1>';
-        echo '<p class="running">';
+        echo '<p class="bt-running">';
         echo hsc($this->getLang('running'));
         echo '&nbsp;';
         echo '<img src="' . DOKU_BASE . 'lib/plugins/backup/spinner.gif" alt="…" />';
@@ -95,7 +150,6 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
         $fn = mediaFN($id);
         try {
             echo '<div class="log">';
-            echo '<script>plugin_backup.start();</script>';
             tpl_flush();
             $this->createBackup($fn, $this->loadPreferences(), [$this, 'logXHTML']);
             echo '</div>';
@@ -105,8 +159,8 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
             msg('Backup failed. ' . $e->getMessage(), -1);
             @unlink($fn);
         }
-
-        echo '<script>plugin_backup.stop();</script>';
+        
+        echo '<script>document.getElementsByClassName(\'bt-running\')[0].style.display=\'none\';</script>';
     }
 
     /**
@@ -145,11 +199,15 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
         $prefs = $this->loadPreferences();
         foreach ($prefs as $pref => $val) {
             $label = $this->getLang('bt_' . $pref);
-            if (!$label) continue; // unknown pref, skip it
+            if (!$label) {
+                continue;
+            } // unknown pref, skip it
 
             $form->setHiddenField("pref[$pref]", '0');
             $cb = $form->addCheckbox("pref[$pref]", $label)->useInput(false)->addClass('block');
-            if ($val) $cb->attr('checked', 'checked');
+            if ($val) {
+                $cb->attr('checked', 'checked');
+            }
         }
 
         $form->addButton('backup', $this->getLang('bt_create_backup'));
@@ -226,7 +284,9 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
         $tar->create($fn);
 
         foreach ($prefs as $pref => $val) {
-            if (!$val) continue;
+            if (!$val) {
+                continue;
+            }
 
             $cmd = [$this, 'backup' . ucfirst($pref)];
             if (is_callable($cmd)) {
@@ -261,10 +321,16 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
             $file = $as . '/' . $file;
 
             // custom filter:
-            if ($filter !== null && !$filter($file)) continue;
-            if (!$this->defaultFilter($file)) continue;
+            if ($filter !== null && !$filter($file)) {
+                continue;
+            }
+            if (!$this->defaultFilter($file)) {
+                continue;
+            }
 
-            if ($logger !== null) $logger($file);
+            if ($logger !== null) {
+                $logger($file);
+            }
             $tar->addFile($path, $file);
         }
     }
@@ -285,10 +351,14 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
             $this->filters = array_filter($this->filters);
         }
 
-        if (strpos($path, '/.git') !== false) return false;
+        if (strpos($path, '/.git') !== false) {
+            return false;
+        }
 
         foreach ($this->filters as $filter) {
-            if (strpos($path, $filter) === 0) return false;
+            if (strpos($path, $filter) === 0) {
+                return false;
+            }
         }
 
         return true;
@@ -406,7 +476,16 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
     protected function backupMediarevs(Tar $tar, $logger)
     {
         global $conf;
-        $this->addDirectoryToTar($tar, $conf['mediaolddir'], 'data/media_attic', $logger);
+
+        // figure out what our backup folder would be called within the backup
+        $media = fullpath(dirname(mediaFN('foo')));
+        $self = fullpath(dirname(mediaFN($this->getConf('backupnamespace') . ':foo')));
+        $relself = 'data/media_attic/' . $this->stripPrefix($self, $media);
+
+        $this->addDirectoryToTar($tar, $conf['mediaolddir'], 'data/media_attic', $logger, function ($path) use ($relself) {
+            // skip our own backups
+            return (strpos($path, $relself) !== 0);
+        });
     }
 
     /**
@@ -420,7 +499,16 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
     protected function backupMediameta(Tar $tar, $logger)
     {
         global $conf;
-        $this->addDirectoryToTar($tar, $conf['mediametadir'], 'data/media_meta', $logger);
+
+        // figure out what our backup folder would be called within the backup
+        $media = fullpath(dirname(mediaFN('foo')));
+        $self = fullpath(dirname(mediaFN($this->getConf('backupnamespace') . ':foo')));
+        $relself = 'data/media_meta/' . $this->stripPrefix($self, $media);
+
+        $this->addDirectoryToTar($tar, $conf['mediametadir'], 'data/media_meta', $logger, function ($path) use ($relself) {
+            // skip our own backups
+            return (strpos($path, $relself) !== 0);
+        });
     }
 
     /**
@@ -452,5 +540,4 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
     }
 
     // endregion
-
 }
