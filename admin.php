@@ -150,7 +150,6 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
         $fn = mediaFN($id);
         try {
             echo '<div class="log">';
-            echo '<script>plugin_backup.start();</script>';
             tpl_flush();
             $this->createBackup($fn, $this->loadPreferences(), [$this, 'logXHTML']);
             echo '</div>';
@@ -161,8 +160,7 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
             @unlink($fn);
         }
         
-        echo '<script>document.getElementsByClassName(\'bt-running\')[0].style.visibility=\'hidden\';</script>';
-        echo '<script>plugin_backup.stop();</script>';
+        echo '<script>document.getElementsByClassName(\'bt-running\')[0].style.display=\'none\';</script>';
     }
 
     /**
