@@ -29,3 +29,5 @@ $lang['success'] = 'Backup successful. Download <a href="%s">%s</a>.';
 
 $lang['medians'] = 'Your backups are stored in <code>%s</code>. Use the <a href="%s">Media Manager</a> to download or delete old backups.';
 $lang['recent'] = 'Your most recent backups:';
+
+$lang['windows-msg'] = 'You\'re running on a Windows-based server. Backup Tool may not function properly on Windows-based servers.';

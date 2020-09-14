@@ -1,5 +1,3 @@
-====== Backup Tool ======
-
 This tool allows you to backup your page and meta data, as well as configuration for the wiki, templates, and plugins, as well as anything else you'd like to backup just in case a [[wp>meteorite]] accidentally lands on top of your hosting provider or something similar.
 
 The tool will create a [[wp>tar_(file format)|tar]] archive, compressed with either [[wp>bzip2]] or [[wp>gzip]] (or uncompressed, depending on availability) which you can then download.

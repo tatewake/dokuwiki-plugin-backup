@@ -1,5 +1,5 @@
 ===== Announcement =====
 
-🎉🥳🎉 As of the year 2020, [[doku>plugins:backup|BackupTool for DokuWiki]] is 14 years old and still going strong! 🎉🥳🎉
+🎉 🥳 🎉 As of the year 2020, [[doku>plugins:backup|BackupTool for DokuWiki]] is 14 years old and still going strong! 🎉 🥳 🎉
 
 If you find this plugin useful, please consider supporting the project via [[http://tjgrant.com/wiki/donate|Donations]] or [[https://github.com/sponsors/tatewake|Sponsorships]]; thank you!
