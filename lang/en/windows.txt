@@ -1,0 +1,9 @@
+===== Warning =====
+
+The Backup Tool plugin has detected that you're attempting to generate a backup on a Windows-based server.
+
+While the plugin may work without issues, on some Windows-based servers, Backup Tool may fail to access some file paths or may fail to create an archive.
+
+**Please note that running Backup Tool on a Windows-based server is unsupported, and that the author of the plugin __will not__ provide technical support for this.**
+
+If you have read the above statement and wish to continue, please press the "I Understand" button below.

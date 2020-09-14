@@ -15,6 +15,11 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
     protected $prefFile = DOKU_CONF . 'backup.json';
     protected $filters = null;
 
+	protected function isRunningWindows()
+	{
+		return (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? true : false;
+	}
+
     /** @inheritdoc */
     public function handle()
     {
@@ -36,12 +41,37 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
         if ($INPUT->post->bool('backup')) {
             $this->runBackup();
         } else {
+            echo '<h1>' . $this->getLang('menu') . '</h1>';
+
+			if ($this->isRunningWindows())
+			{
+				msg($this->getLang('windows-msg'), 2);
+			}
+
+			if ($this->isRunningWindows())
+			{
+				echo '<div class="bt-warning" style="display: block;">';
+				echo $this->locale_xhtml('windows');
+				echo '<button type="button" class="collapsible">I understand</button>';
+				echo '</div>';
+
+				echo '<div class="bt-content" style="display: none;">';
+			}
+			else
+			{
+				echo '<div>';
+			}
+
             echo $this->locale_xhtml('intro');
+
             echo $this->getForm();
+
             $this->listBackups();
-        }
 
         echo $this->locale_xhtml('donate');
+        echo '</div>';
+    }
+
         echo '</div>';
     }
 
