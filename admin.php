@@ -437,7 +437,16 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
     protected function backupMediarevs(Tar $tar, $logger)
     {
         global $conf;
-        $this->addDirectoryToTar($tar, $conf['mediaolddir'], 'data/media_attic', $logger);
+
+        // figure out what our backup folder would be called within the backup
+        $media = fullpath(dirname(mediaFN('foo')));
+        $self = fullpath(dirname(mediaFN($this->getConf('backupnamespace') . ':foo')));
+        $relself = 'data/media_attic/' . $this->stripPrefix($self, $media);
+
+        $this->addDirectoryToTar($tar, $conf['mediaolddir'], 'data/media_attic', $logger, function ($path) use ($relself) {
+            // skip our own backups
+            return (strpos($path, $relself) !== 0);
+        });
     }
 
     /**
@@ -451,7 +460,16 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
     protected function backupMediameta(Tar $tar, $logger)
     {
         global $conf;
-        $this->addDirectoryToTar($tar, $conf['mediametadir'], 'data/media_meta', $logger);
+
+        // figure out what our backup folder would be called within the backup
+        $media = fullpath(dirname(mediaFN('foo')));
+        $self = fullpath(dirname(mediaFN($this->getConf('backupnamespace') . ':foo')));
+        $relself = 'data/media_meta/' . $this->stripPrefix($self, $media);
+
+        $this->addDirectoryToTar($tar, $conf['mediametadir'], 'data/media_meta', $logger, function ($path) use ($relself) {
+            // skip our own backups
+            return (strpos($path, $relself) !== 0);
+        });
     }
 
     /**
