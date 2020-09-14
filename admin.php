@@ -20,6 +20,24 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
 		return (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? true : false;
 	}
 
+	function btRemoveFiles($dir, $startString) { 
+		if (is_dir($dir))
+		{ 
+			$objects = scandir($dir);
+
+			foreach ($objects as $object)
+			{ 
+				if ($object != "." && $object != ".." && substr($object, 0, strlen($startString)) === $startString)
+				{ 
+					if (!is_dir($dir. DIRECTORY_SEPARATOR .$object) || is_link($dir."/".$object))
+					{
+						unlink($dir. DIRECTORY_SEPARATOR .$object); 
+					}
+				} 
+			}
+		} 
+	}
+
     /** @inheritdoc */
     public function handle()
     {
@@ -39,6 +57,7 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
         echo '<div class="plugin_backup">';
 
         if ($INPUT->post->bool('backup')) {
+        	$this->removeMediaAtticBackups();
             $this->runBackup();
         } else {
             echo '<h1>' . $this->getLang('menu') . '</h1>';
@@ -107,6 +126,20 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
 
         echo '<p>' . sprintf($this->getLang('medians'), $ns, $link) . '</p>';
         echo '</div>';
+    }
+
+    protected function removeMediaAtticBackups()
+    {
+		try
+		{
+			global $conf;
+
+			$self = fullpath(dirname(mediaFN($this->getConf('backupnamespace') . ':foo')));
+			$targetdir = $conf['mediaolddir'] . '/' . $this->stripPrefix($self, fullpath(dirname(mediaFN($conf['savedir']))));
+
+			$this->btRemoveFiles($targetdir, 'dw-backup-');
+		}
+		catch (Exception $e) { }
     }
 
     /**
@@ -437,7 +470,16 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
     protected function backupMediarevs(Tar $tar, $logger)
     {
         global $conf;
-        $this->addDirectoryToTar($tar, $conf['mediaolddir'], 'data/media_attic', $logger);
+
+        // figure out what our backup folder would be called within the backup
+        $media = fullpath(dirname(mediaFN('foo')));
+        $self = fullpath(dirname(mediaFN($this->getConf('backupnamespace') . ':foo')));
+        $relself = 'data/media_attic/' . $this->stripPrefix($self, $media);
+
+        $this->addDirectoryToTar($tar, $conf['mediaolddir'], 'data/media_attic', $logger, function ($path) use ($relself) {
+            // skip our own backups
+            return (strpos($path, $relself) !== 0);
+        });
     }
 
     /**
@@ -451,7 +493,16 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
     protected function backupMediameta(Tar $tar, $logger)
     {
         global $conf;
-        $this->addDirectoryToTar($tar, $conf['mediametadir'], 'data/media_meta', $logger);
+
+        // figure out what our backup folder would be called within the backup
+        $media = fullpath(dirname(mediaFN('foo')));
+        $self = fullpath(dirname(mediaFN($this->getConf('backupnamespace') . ':foo')));
+        $relself = 'data/media_meta/' . $this->stripPrefix($self, $media);
+
+        $this->addDirectoryToTar($tar, $conf['mediametadir'], 'data/media_meta', $logger, function ($path) use ($relself) {
+            // skip our own backups
+            return (strpos($path, $relself) !== 0);
+        });
     }
 
     /**
