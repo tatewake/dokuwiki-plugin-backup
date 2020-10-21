@@ -1,0 +1,9 @@
+===== Warnung =====
+
+Das Backup Tool-Plugin hat festgestellt, dass Sie versuchen, ein Backup auf einem Windows basierten Server zu erstellen.
+
+Während das Plugin möglicherweise problemlos funktioniert, kann das Sicherungsprogramm auf einigen Windows basierten Servern möglicherweise nicht auf verschiedene Dateipfade zugreifen oder kann evtl. kein Archiv erstellen.
+
+** Bitte beachten Sie, dass das Ausführen des Backup-Tools auf einem Windows-basierten Server nicht unterstützt wird und dass der Autor des Plugins __keinen__ technischen Support dafür bietet. **
+
+Wenn Sie die obige Erklärung gelesen haben und fortfahren möchten, klicken Sie unten auf die Schaltfläche "Ich verstehe".

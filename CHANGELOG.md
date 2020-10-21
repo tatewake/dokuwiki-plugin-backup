@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 ### Fixed
 
+## [1.0.1] - 2020-10-21
+
+### Added
+
+- [BT-47] - Re-added German language support, based on a contribution by [Conny Henn](mailto:Conny@hennweb.de)
+
 ## [1.0.0] - 2020-09-14
 
 ### Added
@@ -28,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 
 
 [1.0.0]: https://github.com/tatewake/dokuwiki-plugin-backup/releases/tag/1.0.0
+[1.0.1]: https://github.com/tatewake/dokuwiki-plugin-backup/releases/tag/1.0.0
 
 [BT-39]: https://github.com/tatewake/dokuwiki-plugin-backup/issues/39
 [BT-38]: https://github.com/tatewake/dokuwiki-plugin-backup/issues/38
@@ -36,3 +43,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [BT-43]: http://192.168.1.150/open-source/dokuwiki/backup/-/issues/43
 [BT-44]: http://192.168.1.150/open-source/dokuwiki/backup/-/issues/44
 [BT-46]: http://192.168.1.150/open-source/dokuwiki/backup/-/issues/46
+[BT-47]: http://192.168.1.150/open-source/dokuwiki/backup/-/issues/47

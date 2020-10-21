@@ -1,0 +1,15 @@
+Dieses Tool erstellt Sicherungskopien vom Wiki und den Metadaten, der Konfiguration des Wikis, von Templates und Plugins, sowie allen anderen Daten die Sie sichern möchten, für den Fall das ein [[wp>Meteorit]] Ihren Hoster trifft oder etwas ähnlich Schlimmes passiert.
+
+Das Tool wird eine [[wp>tar_(file format)|tar]]-Datei erzeugen, die entweder mit [[wp>bzip2]] oder [[wp>gzip]] komprimiert wird, welche Sie herunterladen können. Wenn dem Backup Tool keine Komprimierungssoftware zur Verfügung steht, wird die tar-Datei unkomprimiert erzeugt.
+
+===== Hinweis =====
+
+  * Wenn das Erstellen der Sicherungskopie einen Timeout erzeugt, versuchen Sie durch Auswahl von weniger Punkten eine geringere Datenmenge in eine Sicherungskopie zu packen.
+  * Die erstellte Datei erhält einen Namen nach dem Format //dw-backup-JahrMonatTag-StundeMinuteSekunde.tar.bz2//, mit der Zeit im 24-Stunden-Format.
+    * Die Datei ist in dieser Form formatiert, damit Sicherungskopien in chronologischer Folge sortiert werden.
+  * **Wenn Sie sicherheitsrelevante Daten** (z.B. private Seiten oder Konfigurationsdateien in denen Passwörter enthalten sind) abspeichern, ist es empfehlenswert, den backup-Namensraum so zu konfigurieren, dass nur Administratoren ihn einsehen können oder Sie löschen die Sicherungskopien sofort, nachdem sie heruntergeladen wurden.
+  * Sie können spezifische Verzeichnisse von der Sicherungskopie ausschließen, z.B. alte Sicherungskopien oder Cacheverzeichnisse vom [[doku>plugin:latex|LateX plugin]]. Schauen Sie dazu in die Konfigurationsdatei für dieses Plugin.
+
+===== Erstelle Backup =====
+
+Bitte wählen Sie aus den folgenden Punkten, was Sie sichern wollen ...

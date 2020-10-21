@@ -1,0 +1,5 @@
+===== Info =====
+
+🎉 🥳 🎉 Seit über 14 Jahren wird das  [[https://www.dokuwiki.org/plugin:backup|BackupTool for DokuWiki]] weiter entwickelt. 🎉 🥳 🎉
+
+Wenn Sie dieses Plugin nützlich finden, können Sie das Projekt unterstützen über [[http://tjgrant.com/wiki/donate|Donations]] oder [[https://github.com/sponsors/tatewake|Sponsorships]]. Vielen Dank!
