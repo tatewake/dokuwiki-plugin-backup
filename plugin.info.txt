@@ -1,7 +1,7 @@
 base        backup
 author      Terence J. Grant
 email       tjgrant@tatewake.com
-date        2020-09-14
-name        BackupTool for DokuWiki 1.0.0
+date        2020-10-21
+name        BackupTool for DokuWiki 1.0.1
 desc        A tool to backup your data and configuration.
 url         https://www.dokuwiki.org/plugin:backup
