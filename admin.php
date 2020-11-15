@@ -317,6 +317,10 @@ class admin_plugin_backup extends DokuWiki_Admin_Plugin
         $rii = new RecursiveIteratorIterator($ri, RecursiveIteratorIterator::SELF_FIRST);
 
         foreach ($rii as $path => $info) {
+            if (is_dir($path)) {
+                continue;
+            }
+
             $file = $this->stripPrefix($path, $dir);
             $file = $as . '/' . $file;
 
